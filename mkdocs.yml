@@ -1,1 +1,30 @@
-site_name: My Docs
+site_name: Jacob AWS Certified Big Data Specialty Tutorial
+site_description: "Jacob's AWS Certified Big Data Specialty"
+site_author: "Jacob Xi"
+copyright: "Copyright &copy; 2021-9999 Jacob Xi"
+site_url: https://chao-xi.github.io/jxistiobook/
+
+plugins:
+  - search # necessary for search to work
+  - awesome-pages
+
+nav:
+  - 'Welcome': "index.md"
+    
+repo_url: https://github.com/Chao-Xi/jxistiobook.git
+repo_name: "jxawscbdbook"
+
+theme: 
+  language: zh
+  name: 'material'
+  include_sidebar: true
+  logo: 'images/logo.jpeg'
+  favicon: 'images/logo.jpeg'
+  feature:
+    tabs: false
+  palette:
+    primary: 'cyan'
+    accent: 'cyan'
+  i18n:
+    prev: 'Previous'
+    next: 'Next'
