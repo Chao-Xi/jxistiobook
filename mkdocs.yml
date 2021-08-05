@@ -12,7 +12,7 @@ nav:
   - 'Welcome': "index.md"
     
 repo_url: https://github.com/Chao-Xi/jxistiobook.git
-repo_name: "jxawscbdbook"
+repo_name: "jxistiobook"
 
 theme: 
   language: zh
