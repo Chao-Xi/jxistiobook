@@ -11,7 +11,7 @@ plugins:
 nav:
   - 'Welcome': "index.md"
   - '第一章: 微服务和 Service Mesh 核心组件':
-    - '第一节 Service Mesh 学习与架构分析': 'chap4/1chap1_learn_SM.md'
+    - '第一节 Service Mesh 学习与架构分析': 'chap1/1chap1_learn_SM.md'
   - '第四章: Istio(1.10.3)-Bookinfo 流量管理':
     - '第一节 2021 Service Mesh & Istio 介绍/安装(1.10.3)': 'chap4/1Istio_Intro.md'
     - '第二节 使用 Istio 实现非侵入流量治理': 'chap4/2Istio_flow_control.md'
