@@ -146,7 +146,3 @@ Service Mesh 一个最重要的变革，就是引入了**数据面和控制面�
 * **Node**：在 Kubernetes 语境中，指的是承载 pod 的服务器，但在微服务的语境中，更多的等同于Endpoint。
 * **Route**：指的是 Service Mesh 中的路由配置，比如 A 服务访问 B 服务，要匹配到一定的规则，比如 header 中要带有服务名(`-H servicename:B`)，才能够拿到 B 服务的访问方式，通过服务发现或者静态列表访问到 B 服务的节点。
 * **Listener**：指的是 Service Mesh 的监听端口，通常我们访问 Service Mesh 的数据面，需要知道数据面的监听端口。
-
-
-
-
