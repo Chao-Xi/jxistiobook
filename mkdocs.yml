@@ -16,6 +16,7 @@ nav:
     - '第三节 负载均衡器': 'chap1/3chap1_load_balancer.md'
     - '第四节 路由器及其限流熔断路由策略': 'chap1/4chap1_router.md'
     - '第五节 连接池：阻塞式连接池和多路复用连接池的差异': 'chap1/5chap1_conn_pool.md'
+    - '第六节 微服务网关（Kong）：网关在微服务架构中的作用': 'chap1/6chap1_apigateway_kong.md'
   - '第四章: Istio(1.10.3)-Bookinfo 流量管理':
     - '第一节 2021 Service Mesh & Istio 介绍/安装(1.10.3)': 'chap4/1Istio_Intro.md'
     - '第二节 使用 Istio 实现非侵入流量治理': 'chap4/2Istio_flow_control.md'
