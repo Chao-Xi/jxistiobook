@@ -19,6 +19,7 @@ nav:
     - '第六节 微服务网关（Kong）：网关在微服务架构中的作用': 'chap1/6chap1_apigateway_kong.md'
     - '第七节 微服务治理的配置中心': 'chap1/7chap1_config_center.md'
     - '第八节 Trace 更快速定位问题': 'chap1/8chap1_trace.md'
+    - '第九节 利用 Prometheus 和 Grafana 收集监控数据': 'chap1/9chap1_monitor.md'
   - '第四章: Istio(1.10.3)-Bookinfo 流量管理':
     - '第一节 2021 Service Mesh & Istio 介绍/安装(1.10.3)': 'chap4/1Istio_Intro.md'
     - '第二节 使用 Istio 实现非侵入流量治理': 'chap4/2Istio_flow_control.md'
