@@ -24,7 +24,7 @@ nav:
     - '第一节 Service Mesh 开源产品中的技术选型': 'chap2/1chap2_sm_prods.md'
     - '第二节 最常用的数据面 Envoy介绍': 'chap2/2chap2_sm_envoy.md'
     - '第三节 Istio 入门：基于最新 1.7 版本的环境搭建和介绍': 'chap2/3chap3_isitio_17.md'
-    - '第四节 xDS：控制面和数据面的通信桥梁':'chap2/4chap3_xds.md'
+    - '第四节 xDS：控制面和数据面的通信桥梁': 'chap2/4chap3_xds.md'
   - '第四章: Istio(1.10.3)-Bookinfo 流量管理':
     - '第一节 2021 Service Mesh & Istio 介绍/安装(1.10.3)': 'chap4/1Istio_Intro.md'
     - '第二节 使用 Istio 实现非侵入流量治理': 'chap4/2Istio_flow_control.md'
