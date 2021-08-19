@@ -349,16 +349,32 @@ Istio Egress 和 Kubernetes 中的 Egress 不同，**Istio的 Egress 本质上�
 $ kubectl apply -f samples/sleep/sleep.yaml
 ```
 
+```
+$ kubectl get all | grep sleep
+pod/sleep-557747455f-w95vv            2/2     Running   0          58s
+service/sleep         ClusterIP   10.100.21.83     <none>        80/TCP     58s
+deployment.apps/sleep            1/1     1            1           58s
+replicaset.apps/sleep-557747455f            1         1         1       58s
+```
+
 设置 Pod 的环境变量：
 
 ```
 export SOURCE_POD=$(kubectl get pod -l app=sleep -o jsonpath={.items..metadata.name})
 ```
+```
+$ kubectl get pod -l app=sleep -o jsonpath={.items..metadata.name}
+sleep-557747455f-w95vv
+
+export SOURCE_POD=sleep-557747455f-w95vv
+```
+
 
 在设置策略之前，我们先尝试从 Pod 内部访问外部服务：
 
 ```
-kubectl exec -it $SOURCE_POD -c sleep -- curl -I https://www.douban.com | grep  "HTTP/"; kubectl exec -it $SOURCE_POD -c sleep -- curl -I https://edition.cnn.com | grep "HTTP/"
+kubectl exec -it $SOURCE_POD -c sleep -- curl -I https://www.douban.com | grep  "HTTP/"; 
+kubectl exec -it $SOURCE_POD -c sleep -- curl -I https://edition.cnn.com | grep "HTTP/"
 ```
 
 可以得到以下结果，表明访问外部正常：
@@ -368,12 +384,17 @@ HTTP/1.1 200 OK
 HTTP/2 200
 ```
 
+```
+$ kubectl exec -it $SOURCE_POD -c sleep -- curl -I https://www.douban.com | grep  "HTTP/"; 
+HTTP/1.1 200 OK
+```
+
 通过下述命令，查看 Istio Egress Gateway 是否部署：
 
 ```
-$ kubectl get pod -l istio=egressgateway -n istio-system
+$  kubectl get pod -l istio=egressgateway -n istio-system
 NAME                                   READY   STATUS    RESTARTS   AGE
-istio-egressgateway-8556f8c8dc-4tkn7   1/1     Running   5          95d
+istio-egressgateway-5547fcc8fc-flqkt   1/1     Running   2          13d
 ```
 
 **<mark>创建一个 ServiceEntry，允许流量直接访问一个外部服务</mark>**
