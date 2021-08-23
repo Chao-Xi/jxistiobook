@@ -29,6 +29,8 @@ nav:
     - '第六节 金丝雀发布：金丝雀部署和版本控制': 'chap2/6chap3_canary.md'
     - '第七节 如何利用组件做到服务的可观测性': 'chap2/7chap3_monitor.md'
     - '第八节 Proj项目落地: Go 实现 Service Mesh': 'chap2/8chap3_SM_GO_PROJ.md'
+    - '第九节 Service Mesh 落地和展望': 'chap2/9chap3_pratice.md'
+    - '第十节 Mesh的未来发展与可行性方向': 'chap2/10chap3_mesh.md'
   - '第四章: Istio(1.10.3)-Bookinfo 流量管理':
     - '第一节 2021 Service Mesh & Istio 介绍/安装(1.10.3)': 'chap4/1Istio_Intro.md'
     - '第二节 使用 Istio 实现非侵入流量治理': 'chap4/2Istio_flow_control.md'
