@@ -43,6 +43,7 @@ nav:
     - '第一节 2021 Service Mesh & Istio 介绍/安装(1.10.3)': 'chap4/1Istio_Intro.md'
     - '第二节 使用 Istio 实现非侵入流量治理': 'chap4/2Istio_flow_control.md'
     - '第三节 Istio 流量管理之故障注入': 'chap4/3Istio_fault_inject.md'
+    - '第四节 Istio ServiceEntry 的填坑之路': 'chap4/4Istio_ServiceEntry_issue.md'
    
     
 repo_url: https://github.com/Chao-Xi/jxistiobook.git
