@@ -44,7 +44,19 @@ nav:
     - '第二节 使用 Istio 实现非侵入流量治理': 'chap4/2Istio_flow_control.md'
     - '第三节 Istio 流量管理之故障注入': 'chap4/3Istio_fault_inject.md'
     - '第四节 Istio ServiceEntry 的填坑之路': 'chap4/4Istio_ServiceEntry_issue.md'
-   
+  - '第五章: Istio 高级教学与实践':
+    - '第一节 服务网格的基本特征': 'chap5/1Service_Mesh_Intro.md'
+    - '第二节 Istio 基本介绍': 'chap5/2Istio_Intro.md'
+    - '第三节 Istio, Service Mesh 快速入门（Istio 1.1.16）': 'chap5/3Istro_ServiceM_Prac.md'
+    - '第四节 用Helm部署Istio': 'chap5/4Istio_Helm.md'
+    - '第五节 Istio 常用功能 （自动/手动部署Istio应用）': 'chap5/5Istio_funcs.md'
+    - '第六节 使用 Istio Dashboard Grafana / Prometheus': 'chap5/6Istio_func2_grafana_prometheus.md'
+    - '第七节 使用 Istio Dashboard': 'chap5/7Istio_fun3_Jager.md'
+    - '第八节 使用Kiali': 'chap5/8Istio_func4_Kiali.md'
+    - '第九节 HTTPS流量管理(目标规则/默认路由/流量的拆分和迁移)': 'chap5/9Istio_http1.md'
+    - '第十节 HTTPS流量管理(金丝雀部署/源服务进行路由/URI进行重定向)': 'chap5/10Istio_http2.md'
+
+
     
 repo_url: https://github.com/Chao-Xi/jxistiobook.git
 repo_name: "jxistiobook"
