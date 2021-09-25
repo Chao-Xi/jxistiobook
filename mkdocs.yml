@@ -55,6 +55,16 @@ nav:
     - '第八节 使用Kiali': 'chap5/8Istio_func4_Kiali.md'
     - '第九节 HTTPS流量管理(目标规则/默认路由/流量的拆分和迁移)': 'chap5/9Istio_http1.md'
     - '第十节 HTTPS流量管理(金丝雀部署/源服务进行路由/URI进行重定向)': 'chap5/10Istio_http2.md'
+    - '第十一节 HTTPS流量管理（通信超时/故障重试/入口~出口流量管理）': 'chap5/11Istio_http3.md'
+    - '第十二节 HTTPS流量管理（服务熔断/故障注入测试/注入中断/流量复制)': 'chap5/12Istio_http4.md'
+    - '第十三节 Mixer 适配器的应用': 'chap5/13Istio_Mixer1.md'
+    - '第十四节 Mixer 适配器的应用': 'chap5/14Istio_Mixer2.md'
+    - '第十五节 Mixer 适配器的应用 - 为Prometheus定义监控指标': 'chap5/15Istio_Mixer3_prometheus.md'
+    - '第十六节 使用stdio输出自定义日志': 'chap5/16Istio_Mixer4_stdio.md'
+    - '第十七节 使用Fluentd输出日志': 'chap5/17Istio_Mixer5_fluentd.md'
+    - '第十八节 Istio的安全加固（启用mTLS\加固概述)': 'chap5/18Istio_Sec1.md'
+    - '第十九节 Istio的安全加固(RBAC设置\拍错）': 'chap5/19Istio_Sec2_RBAC.md'
+    - '第二十节 Istio的试用建议': 'chap5/20Istio_Usage.md'
 
 
     
