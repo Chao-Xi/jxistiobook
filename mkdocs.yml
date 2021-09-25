@@ -65,8 +65,12 @@ nav:
     - '第十八节 Istio的安全加固（启用mTLS\加固概述)': 'chap5/18Istio_Sec1.md'
     - '第十九节 Istio的安全加固(RBAC设置\拍错）': 'chap5/19Istio_Sec2_RBAC.md'
     - '第二十节 Istio的试用建议': 'chap5/20Istio_Usage.md'
+  - '第六章': '实验与教学bookinfo(istio-1.3)':
+    - 'L1 Docker for Mac安装istio(k8s-1.10/istio-1.3)': 'chap6/1Istio_install_docker.md'
+    - 'L2 基于Bookinfo的流量管理配置(服务版本/基于权重/基于请求内容)': 'chap6/2BookInfo_1.md'
+    - 'L3 基于Bookinfo的流量管理配置(延迟访问/中断访问/不同环境/服务网格外)': 'chap6/3BookInfo_2.md'
 
-    
+
 repo_url: https://github.com/Chao-Xi/jxistiobook.git
 repo_name: "jxistiobook"
 
