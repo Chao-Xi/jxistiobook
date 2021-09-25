@@ -1,4 +1,4 @@
-# **第十三节 Mixer 适配器的应用**
+# **第十三节 Mixer 适配器的应用(简介/Denier访问控制/Listchecker访问控制)**
 
 `Istio` 除了提供了丰富的流量控制功能，**<mark>还通过`Mixer`：提供了可扩展的外接功能。</mark>**
 

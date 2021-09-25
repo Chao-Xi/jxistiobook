@@ -28,7 +28,7 @@
 4. 或者由`Fluentd`适配器提交给`Flutend`进程进行后续的采集过程 
 
 
-## **1、 默认的访问日志** 
+## **1、默认的访问日志** 
 
 **`istio`默认在安装时提供`accesslog`和`tcpaccesslog`两个`logentry`实例**，我们可以观察`accesslog`的配置方法： 
 
