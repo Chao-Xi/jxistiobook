@@ -73,6 +73,16 @@ nav:
     - 'L1 Kubernetes中的渐进式交付:蓝绿部署和金丝雀部署shipper/Istio/Flagger': 'chap7/k8s_adv54_release.md'
     - 'L2 使用 Jenkins X 渐进式交付': 'chap7/k8s_adv56_jenkinsX.md'
     - 'L3 使用 Jenkins X 渐进式交付:自动化金丝雀部署': 'chap7/k8s_adv57_Auto_Canary.md'
+  - '第八章: Tetrate Istio基础培训与实验测试':
+    - '第一节 服务网格和 Istio 概览': 'chap8/1service_mesh.md'
+    - '第二节 安装 Istio': 'chap8/2Istio_install.md'
+    - '第三节 可观察性：遥测和日志': 'chap8/3Istio_mon.md'
+    - '第四节 流量管理': 'chap8/4Istio_net_control.md'
+    - '第五节 流量管理实验与测试': 'chap8/5Istio_net_control_exp.md'
+    - '第六节 Istio Secuirty': 'chap8/6Istio_secruity.md'
+    - '第七节 Istio高级功能': 'chap8/7Istio_adv_feas.md'
+    - '第九节 实际案例': 'chap8/9Istio_real_instance.md'
+    - '第十节 术语表': 'chap8/10Istio_terms.md'
 
 repo_url: https://github.com/Chao-Xi/jxistiobook.git
 repo_name: "jxistiobook"
