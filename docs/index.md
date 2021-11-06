@@ -31,6 +31,8 @@ This books is my 7th tech books published in almost 4 months. And this book is m
 
 ![Alt Image Text](images/certificate.png "body image") 
 
+https://tetrate-academy.thinkific.com/certificates/5b9sjc8qmc#.YYSkZTI51pM.linkedin
+
 ### **Previous on my Technolog book**
 
 > [手摸手 Jenkins 战术教程 (大师版）](https://chao-xi.github.io/jxjenkinsbook/)
