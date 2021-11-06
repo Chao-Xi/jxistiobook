@@ -65,7 +65,7 @@ nav:
     - '第十八节 Istio的安全加固（启用mTLS\加固概述)': 'chap5/18Istio_Sec1.md'
     - '第十九节 Istio的安全加固(RBAC设置\拍错）': 'chap5/19Istio_Sec2_RBAC.md'
     - '第二十节 Istio的试用建议': 'chap5/20Istio_Usage.md'
-  - '第六章: 实验与教学bookinfo(istio-1.3)':
+  - '第六章: 实验与教学bookinfo(istio-1.3)-old':
     - 'L1 Docker for Mac安装istio(istio-1.3)': 'chap6/1Istio_install_docker.md'
     - 'L2 基于Bookinfo的流量管理配置(服务版本/基于权重/基于请求内容)': 'chap6/2BookInfo_1.md'
     - 'L3 基于Bookinfo的流量管理配置(延迟访问/中断访问/不同环境/服务网格外)': 'chap6/3BookInfo_2.md'
@@ -81,6 +81,7 @@ nav:
     - '第五节 流量管理实验与测试': 'chap8/5Istio_net_control_exp.md'
     - '第六节 Istio Secuirty': 'chap8/6Istio_secruity.md'
     - '第七节 Istio高级功能': 'chap8/7Istio_adv_feas.md'
+    - '第八节 Istio 问题排查': 'chap8/8Istio_trouble_shoot.md'
     - '第九节 实际案例': 'chap8/9Istio_real_instance.md'
     - '第十节 术语表': 'chap8/10Istio_terms.md'
   - '第九章: Istio日常操作与技巧':
@@ -88,6 +89,7 @@ nav:
     - '第二节 Istio 安全最佳实践': 'chap9/2Istio_security.md'
     - '第三节 记一次 Istio ServiceEntry 的填坑之路': 'chap9/3Istio_service_entry.md'
     - '第四节 使用 Istio 的十个技巧': 'chap9/4Istio_istio_skill.md'
+    - '第五节 Istio 常见的 10 个异常分析': 'chap9/24Istio_troubleshoot.md'
 
 
 repo_url: https://github.com/Chao-Xi/jxistiobook.git
