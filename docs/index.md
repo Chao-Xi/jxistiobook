@@ -31,7 +31,7 @@ This books is my 7th tech books published in almost 4 months. And this book is m
 
 ![Alt Image Text](images/certificate.png "body image") 
 
-https://tetrate-academy.thinkific.com/certificates/5b9sjc8qmc#.YYSkZTI51pM.linkedin
+https://tetrate-academy.thinkific.com/certificates/5b9sjc8qmc
 
 ### **Previous on my Technolog book**
 
