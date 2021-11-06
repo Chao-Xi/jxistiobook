@@ -83,6 +83,12 @@ nav:
     - '第七节 Istio高级功能': 'chap8/7Istio_adv_feas.md'
     - '第九节 实际案例': 'chap8/9Istio_real_instance.md'
     - '第十节 术语表': 'chap8/10Istio_terms.md'
+  - '第九章: Istio日常操作与技巧':
+    - '第一节 istio浅析 (Slide备案）': 'chap9/1Istio_intro_ppt.md'
+    - '第二节 Istio 安全最佳实践': 'chap9/2Istio_security.md'
+    - '第三节 记一次 Istio ServiceEntry 的填坑之路': 'chap9/3Istio_service_entry.md'
+    - '第四节 使用 Istio 的十个技巧': 'chap9/4Istio_istio_skill.md'
+
 
 repo_url: https://github.com/Chao-Xi/jxistiobook.git
 repo_name: "jxistiobook"
