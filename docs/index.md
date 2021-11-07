@@ -4,7 +4,7 @@
 
 ## **About this tutorial**
 
-This books is my 7th tech books published in almost 4 months. And this book is my most exhausted book so far. The weather is getting cooler and cooler🥶 and  double eleven is arouynd the corner. Totally nod idea what should I buy. Really appricate so team colleagues' and friends' support and instruction. 
+This books is my 7th tech books published in almost 5 months. And this book is my most exhausted and hardworking book so far. The weather is getting cooler and cooler🥶 and  double eleven is around the corner. Totally no idea what should I buy. Really appricate our team colleagues and friends' support and instruction.
 
 ![Alt Image Text](images/ba/1_2.png "Body image")
 
