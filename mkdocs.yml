@@ -90,6 +90,8 @@ nav:
     - '第三节 记一次 Istio ServiceEntry 的填坑之路': 'chap9/3Istio_service_entry.md'
     - '第四节 使用 Istio 的十个技巧': 'chap9/4Istio_istio_skill.md'
     - '第五节 Istio 常见的 10 个异常分析': 'chap9/24Istio_troubleshoot.md'
+  - 'extra':
+    - 'GitHub+Travis+Mkdocs自动化构建文档库(Istio)': 'extra/mk_book.md'
 
 
 repo_url: https://github.com/Chao-Xi/jxistiobook.git
