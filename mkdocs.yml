@@ -92,6 +92,8 @@ nav:
     - '第五节 Istio 常见的 10 个异常分析': 'chap9/24Istio_troubleshoot.md'
     - '第五节 Istio面试': 'chap9/5istio_interview.md'
     - '第六节 Kubernetes 的 mTLS 指南': 'chap9/6k8s_mtls.md'
+  - '第10章: Istio架构及发展':
+    - '1 Istiovs.Linkerdvs.Consul：服务网格该怎么选择？': 'chap10/1istio_linked_consul.md'
   - 'extra':
     - 'GitHub+Travis+Mkdocs自动化构建文档库(Istio)': 'extra/mk_book.md'
 
