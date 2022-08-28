@@ -96,6 +96,7 @@ nav:
     - '1 Istiovs.Linkerdvs.Consul：服务网格该怎么选择？': 'chap10/1istio_linked_consul.md'
   - '第11章: Linkerd':
     - '1 Linkerd Service Mesh 快速上手': 'chap11/1linkered_sm.md'
+    - '2 在 Linkerd 中获取应用的黄金指标': 'chap11/2linkered_index.md'
   - 'extra':
     - 'GitHub+Travis+Mkdocs自动化构建文档库(Istio)': 'extra/mk_book.md'
 
