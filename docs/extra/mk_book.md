@@ -12,7 +12,9 @@ git init
 git remote add origin https://github.com/Chao-Xi/jxistiobook.git
 # pip3 install mkdocs-awesome-pages-plugin
 
-mkdocs gh-deploy --clean --remote-name https://ghp_...@github.com/Chao-Xi/jxawscsaabook.git
+
+
+
 ```
 
 

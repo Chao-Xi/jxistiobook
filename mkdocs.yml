@@ -73,6 +73,7 @@ nav:
     - 'L1 Kubernetes中的渐进式交付:蓝绿部署和金丝雀部署shipper/Istio/Flagger': 'chap7/k8s_adv54_release.md'
     - 'L2 使用 Jenkins X 渐进式交付': 'chap7/k8s_adv56_jenkinsX.md'
     - 'L3 使用 Jenkins X 渐进式交付:自动化金丝雀部署': 'chap7/k8s_adv57_Auto_Canary.md'
+    - 'L4 使用Rainbond+Istio实现灰度发布': 'chap7/k8s_isitio_gray.md'
   - '第八章: Tetrate Istio基础培训与实验测试':
     - '第一节 服务网格和 Istio 概览': 'chap8/1service_mesh.md'
     - '第二节 安装 Istio': 'chap8/2Istio_install.md'
@@ -94,9 +95,16 @@ nav:
     - '第六节 Kubernetes 的 mTLS 指南': 'chap9/6k8s_mtls.md'
   - '第10章: Istio架构及发展':
     - '1 Istiovs.Linkerdvs.Consul：服务网格该怎么选择？': 'chap10/1istio_linked_consul.md'
+    - '2 Istio Ambient Mesh 介绍': 'chap10/2istio_ambient.md'
   - '第11章: Linkerd':
     - '1 Linkerd Service Mesh 快速上手': 'chap11/1linkered_sm.md'
     - '2 在 Linkerd 中获取应用的黄金指标': 'chap11/2linkered_index.md'
+    - '3 Linkerd 通过 ServiceProfile 实现超时和重试': 'chap11/3linkered_ServiceProfile.md'
+    - '4 在 Linkerd 中使用 mTLS 保护应用程序通信': 'chap11/4linkered_mtls.md'
+    - '5 在 Linkerd 中实现流量拆分功能': 'chap11/5linkerd_flow_split.md'
+    - '6 在生产环境中使用 Linkerd': 'chap11/6linkered_prod.md'
+    - '7 Linkerd 与 ingress-nginx 结合使用以及对服务的访问限制': 'chap11/7linkered_ingress.md'
+    - '8 Linkerd 升级到全新的 2.12 版本': 'chap11/8linkerd_212.md'
   - 'extra':
     - 'GitHub+Travis+Mkdocs自动化构建文档库(Istio)': 'extra/mk_book.md'
 
