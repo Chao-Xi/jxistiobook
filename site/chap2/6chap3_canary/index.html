@@ -1,0 +1,2462 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Jacob's Istio & Service Mesh Tutorial">
+      
+      
+        <meta name="author" content="Jacob Xi">
+      
+      
+        <link rel="canonical" href="https://chao-xi.github.io/jxistiobook/chap2/6chap3_canary/">
+      
+      <link rel="icon" href="../../images/logo.jpeg">
+      <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.5.2">
+    
+    
+      
+        <title>第六节 金丝雀发布：金丝雀部署和版本控制 - Jacob Istio & Service Mesh E-Book</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.9f9400aa.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.cbb835fc.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#00bdd6">
+        
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="cyan" data-md-color-accent="cyan">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="Jacob Istio &amp; Service Mesh E-Book" class="md-header__button md-logo" aria-label="Jacob Istio & Service Mesh E-Book" data-md-component="logo">
+      
+  <img src="../../images/logo.jpeg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Jacob Istio & Service Mesh E-Book
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第六节 金丝雀发布：金丝雀部署和版本控制
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Chao-Xi/jxistiobook.git" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jxistiobook
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Jacob Istio &amp; Service Mesh E-Book" class="md-nav__button md-logo" aria-label="Jacob Istio & Service Mesh E-Book" data-md-component="logo">
+      
+  <img src="../../images/logo.jpeg" alt="logo">
+
+    </a>
+    Jacob Istio & Service Mesh E-Book
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Chao-Xi/jxistiobook.git" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jxistiobook
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Welcome
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          第一章: 微服务和 Service Mesh 核心组件
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="第一章: 微服务和 Service Mesh 核心组件" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          第一章: 微服务和 Service Mesh 核心组件
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap1/1chap1_learn_SM/" class="md-nav__link">
+        第一节 Service Mesh 学习与架构分析
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap1/2chap1_service_register/" class="md-nav__link">
+        第二节 服务注册中心
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap1/3chap1_load_balancer/" class="md-nav__link">
+        第三节 负载均衡器
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap1/4chap1_router/" class="md-nav__link">
+        第四节 路由器及其限流熔断路由策略
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap1/5chap1_conn_pool/" class="md-nav__link">
+        第五节 连接池：阻塞式连接池和多路复用连接池的差异
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap1/6chap1_apigateway_kong/" class="md-nav__link">
+        第六节 微服务网关（Kong）：网关在微服务架构中的作用
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap1/7chap1_config_center/" class="md-nav__link">
+        第七节 微服务治理的配置中心
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap1/8chap1_trace/" class="md-nav__link">
+        第八节 Trace 更快速定位问题
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap1/9chap1_monitor/" class="md-nav__link">
+        第九节 利用 Prometheus 和 Grafana 收集监控数据
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          第二章: Service Mesh 实战
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="第二章: Service Mesh 实战" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          第二章: Service Mesh 实战
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1chap2_sm_prods/" class="md-nav__link">
+        第一节 Service Mesh 开源产品中的技术选型
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../2chap2_sm_envoy/" class="md-nav__link">
+        第二节 最常用的数据面 Envoy介绍
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../3chap3_isitio_17/" class="md-nav__link">
+        第三节 Istio 入门：基于最新 1.7 版本的环境搭建和介绍
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../4chap3_xds/" class="md-nav__link">
+        第四节 xDS：控制面和数据面的通信桥梁
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../5chap3_ingress_egress/" class="md-nav__link">
+        第五节 Ingress 和 Egress：入口流量和出口流量控制
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          第六节 金丝雀发布：金丝雀部署和版本控制
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        第六节 金丝雀发布：金丝雀部署和版本控制
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1kubernetes" class="md-nav__link">
+    1、Kubernetes 中的金丝雀发布
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2istio" class="md-nav__link">
+    2、Istio 中的金丝雀发布
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3istio" class="md-nav__link">
+    3、Istio 金丝雀测试
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../7chap3_monitor/" class="md-nav__link">
+        第七节 如何利用组件做到服务的可观测性
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../8chap3_SM_GO_PROJ/" class="md-nav__link">
+        第八节 Proj项目落地: Go 实现 Service Mesh
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../9chap3_pratice/" class="md-nav__link">
+        第九节 Service Mesh 落地和展望
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../10chap3_mesh/" class="md-nav__link">
+        第十节 Mesh的未来发展与可行性方向
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          第三章: Istio基础教学
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="第三章: Istio基础教学" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          第三章: Istio基础教学
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap3/0Service_Mesh/" class="md-nav__link">
+        第一节 服务网格(Service Mesh)是什么?
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap3/1isba_Frame_Tech/" class="md-nav__link">
+        第二节 Istio 架构与技术
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap3/2isba_Service_Find/" class="md-nav__link">
+        第三节 Istio 服务发现和 Pilot的架构机制
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap3/3isba_Gateway/" class="md-nav__link">
+        第四节 Gateway 设计与实现
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap3/4isba_Gray_release/" class="md-nav__link">
+        第五节 Istio 灰度发布与技术实现
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap3/5isba_Xds/" class="md-nav__link">
+        第六节 xDS协议解析
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap3/6isba_Mixer/" class="md-nav__link">
+        第七节 Mixer基础与实现
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_5">
+          第四章: Istio(1.10.3)-Bookinfo 流量管理
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="第四章: Istio(1.10.3)-Bookinfo 流量管理" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          第四章: Istio(1.10.3)-Bookinfo 流量管理
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap4/1Istio_Intro/" class="md-nav__link">
+        第一节 2021 Service Mesh & Istio 介绍/安装(1.10.3)
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap4/2Istio_flow_control/" class="md-nav__link">
+        第二节 使用 Istio 实现非侵入流量治理
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap4/3Istio_fault_inject/" class="md-nav__link">
+        第三节 Istio 流量管理之故障注入
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap4/4Istio_ServiceEntry_issue/" class="md-nav__link">
+        第四节 Istio ServiceEntry 的填坑之路
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_6">
+          第五章: Istio 高级教学与实践
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="第五章: Istio 高级教学与实践" data-md-level="1">
+        <label class="md-nav__title" for="__nav_6">
+          <span class="md-nav__icon md-icon"></span>
+          第五章: Istio 高级教学与实践
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/1Service_Mesh_Intro/" class="md-nav__link">
+        第一节 服务网格的基本特征
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/2Istio_Intro/" class="md-nav__link">
+        第二节 Istio 基本介绍
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/3Istro_ServiceM_Prac/" class="md-nav__link">
+        第三节 Istio, Service Mesh 快速入门（Istio 1.1.16）
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/4Istio_Helm/" class="md-nav__link">
+        第四节 用Helm部署Istio
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/5Istio_funcs/" class="md-nav__link">
+        第五节 Istio 常用功能 （自动/手动部署Istio应用）
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/6Istio_func2_grafana_prometheus/" class="md-nav__link">
+        第六节 使用 Istio Dashboard Grafana / Prometheus
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/7Istio_fun3_Jager/" class="md-nav__link">
+        第七节 使用 Istio Dashboard
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/8Istio_func4_Kiali/" class="md-nav__link">
+        第八节 使用Kiali
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/9Istio_http1/" class="md-nav__link">
+        第九节 HTTPS流量管理(目标规则/默认路由/流量的拆分和迁移)
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/10Istio_http2/" class="md-nav__link">
+        第十节 HTTPS流量管理(金丝雀部署/源服务进行路由/URI进行重定向)
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/11Istio_http3/" class="md-nav__link">
+        第十一节 HTTPS流量管理（通信超时/故障重试/入口~出口流量管理）
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/12Istio_http4/" class="md-nav__link">
+        第十二节 HTTPS流量管理（服务熔断/故障注入测试/注入中断/流量复制)
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/13Istio_Mixer1/" class="md-nav__link">
+        第十三节 Mixer 适配器的应用(简介/Denier访问控制/Listchecker访问控制)
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/14Istio_Mixer2/" class="md-nav__link">
+        第十四节 Mixer 适配器的应用(MemQuota服务限流/Mixer对象的定义/RedisQuota服务限流)
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/15Istio_Mixer3_prometheus/" class="md-nav__link">
+        第十五节 Mixer 适配器的应用 - 为Prometheus定义监控指标
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/16Istio_Mixer4_stdio/" class="md-nav__link">
+        第十六节 使用stdio输出自定义日志
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/17Istio_Mixer5_fluentd/" class="md-nav__link">
+        第十七节 使用Fluentd输出日志
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/18Istio_Sec1/" class="md-nav__link">
+        第十八节 Istio的安全加固（启用mTLS\加固概述)
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/19Istio_Sec2_RBAC/" class="md-nav__link">
+        第十九节 Istio的安全加固(RBAC设置\拍错）
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/20Istio_Usage/" class="md-nav__link">
+        第二十节 Istio的试用建议
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7" type="checkbox" id="__nav_7" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_7">
+          第六章: 实验与教学bookinfo(istio-1.3)-old
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="第六章: 实验与教学bookinfo(istio-1.3)-old" data-md-level="1">
+        <label class="md-nav__title" for="__nav_7">
+          <span class="md-nav__icon md-icon"></span>
+          第六章: 实验与教学bookinfo(istio-1.3)-old
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap6/1Istio_install_docker/" class="md-nav__link">
+        L1 Docker for Mac安装istio(istio-1.3)
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap6/2BookInfo_1/" class="md-nav__link">
+        L2 基于Bookinfo的流量管理配置(服务版本/基于权重/基于请求内容)
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap6/3BookInfo_2/" class="md-nav__link">
+        L3 基于Bookinfo的流量管理配置(延迟访问/中断访问/不同环境/服务网格外)
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_8" type="checkbox" id="__nav_8" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_8">
+          第七章: JenkinsX + Istio渐进式交付
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="第七章: JenkinsX + Istio渐进式交付" data-md-level="1">
+        <label class="md-nav__title" for="__nav_8">
+          <span class="md-nav__icon md-icon"></span>
+          第七章: JenkinsX + Istio渐进式交付
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap7/k8s_adv54_release/" class="md-nav__link">
+        L1 Kubernetes中的渐进式交付:蓝绿部署和金丝雀部署shipper/Istio/Flagger
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap7/k8s_adv56_jenkinsX/" class="md-nav__link">
+        L2 使用 Jenkins X 渐进式交付
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap7/k8s_adv57_Auto_Canary/" class="md-nav__link">
+        L3 使用 Jenkins X 渐进式交付:自动化金丝雀部署
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap7/k8s_isitio_gray/" class="md-nav__link">
+        L4 使用Rainbond+Istio实现灰度发布
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_9" type="checkbox" id="__nav_9" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_9">
+          第八章: Tetrate Istio基础培训与实验测试
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="第八章: Tetrate Istio基础培训与实验测试" data-md-level="1">
+        <label class="md-nav__title" for="__nav_9">
+          <span class="md-nav__icon md-icon"></span>
+          第八章: Tetrate Istio基础培训与实验测试
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap8/1service_mesh/" class="md-nav__link">
+        第一节 服务网格和 Istio 概览
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap8/2Istio_install/" class="md-nav__link">
+        第二节 安装 Istio
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap8/3Istio_mon/" class="md-nav__link">
+        第三节 可观察性：遥测和日志
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap8/4Istio_net_control/" class="md-nav__link">
+        第四节 流量管理
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap8/5Istio_net_control_exp/" class="md-nav__link">
+        第五节 流量管理实验与测试
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap8/6Istio_secruity/" class="md-nav__link">
+        第六节 Istio Secuirty
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap8/7Istio_adv_feas/" class="md-nav__link">
+        第七节 Istio高级功能
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap8/8Istio_trouble_shoot/" class="md-nav__link">
+        第八节 Istio 问题排查
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap8/9Istio_real_instance/" class="md-nav__link">
+        第九节 实际案例
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap8/10Istio_terms/" class="md-nav__link">
+        第十节 术语表
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_10" type="checkbox" id="__nav_10" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_10">
+          第九章: Istio日常操作与技巧
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="第九章: Istio日常操作与技巧" data-md-level="1">
+        <label class="md-nav__title" for="__nav_10">
+          <span class="md-nav__icon md-icon"></span>
+          第九章: Istio日常操作与技巧
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap9/1Istio_intro_ppt/" class="md-nav__link">
+        第一节 istio浅析 (Slide备案）
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap9/2Istio_security/" class="md-nav__link">
+        第二节 Istio 安全最佳实践
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap9/3Istio_service_entry/" class="md-nav__link">
+        第三节 记一次 Istio ServiceEntry 的填坑之路
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap9/4Istio_istio_skill/" class="md-nav__link">
+        第四节 使用 Istio 的十个技巧
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap9/24Istio_troubleshoot/" class="md-nav__link">
+        第五节 Istio 常见的 10 个异常分析
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap9/5istio_interview/" class="md-nav__link">
+        第五节 Istio面试
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap9/6k8s_mtls/" class="md-nav__link">
+        第六节 Kubernetes 的 mTLS 指南
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap9/8istio_mtls/" class="md-nav__link">
+        第七节 如何理解 Istio 中的 mTLS 流量加密？
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_11" type="checkbox" id="__nav_11" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_11">
+          第10章: Istio架构及发展
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="第10章: Istio架构及发展" data-md-level="1">
+        <label class="md-nav__title" for="__nav_11">
+          <span class="md-nav__icon md-icon"></span>
+          第10章: Istio架构及发展
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap10/1istio_linked_consul/" class="md-nav__link">
+        1 Istiovs.Linkerdvs.Consul：服务网格该怎么选择？
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap10/2istio_ambient/" class="md-nav__link">
+        2 Istio Ambient Mesh 介绍
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_12" type="checkbox" id="__nav_12" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_12">
+          第11章: Linkerd
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="第11章: Linkerd" data-md-level="1">
+        <label class="md-nav__title" for="__nav_12">
+          <span class="md-nav__icon md-icon"></span>
+          第11章: Linkerd
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap11/1linkered_sm/" class="md-nav__link">
+        1 Linkerd Service Mesh 快速上手
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap11/2linkered_index/" class="md-nav__link">
+        2 在 Linkerd 中获取应用的黄金指标
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap11/3linkered_ServiceProfile/" class="md-nav__link">
+        3 Linkerd 通过 ServiceProfile 实现超时和重试
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap11/4linkered_mtls/" class="md-nav__link">
+        4 在 Linkerd 中使用 mTLS 保护应用程序通信
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap11/5linkerd_flow_split/" class="md-nav__link">
+        5 在 Linkerd 中实现流量拆分功能
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap11/6linkered_prod/" class="md-nav__link">
+        6 在生产环境中使用 Linkerd
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap11/7linkered_ingress/" class="md-nav__link">
+        7 Linkerd 与 ingress-nginx 结合使用以及对服务的访问限制
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap11/8linkerd_212/" class="md-nav__link">
+        8 Linkerd 升级到全新的 2.12 版本
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_13" type="checkbox" id="__nav_13" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_13">
+          extra
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="extra" data-md-level="1">
+        <label class="md-nav__title" for="__nav_13">
+          <span class="md-nav__icon md-icon"></span>
+          extra
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../extra/mk_book/" class="md-nav__link">
+        GitHub+Travis+Mkdocs自动化构建文档库(Istio)
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1kubernetes" class="md-nav__link">
+    1、Kubernetes 中的金丝雀发布
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2istio" class="md-nav__link">
+    2、Istio 中的金丝雀发布
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3istio" class="md-nav__link">
+    3、Istio 金丝雀测试
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  <a href="https://github.com/Chao-Xi/jxistiobook.git/edit/master/docs/chap2/6chap3_canary.md" title="编辑此页" class="md-content__button md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
+  </a>
+
+
+<h1 id="_1"><strong>第六节 金丝雀发布：金丝雀部署和版本控制</strong></h1>
+<h2 id="1kubernetes"><strong>1、Kubernetes 中的金丝雀发布</strong></h2>
+<p>如何在 Kubernetes 中进行版本更新</p>
+<p>首先启动 Minikube 环境：</p>
+<pre><code>minikube start --kubernetes-version=v1.19.2 --driver=docker
+</code></pre>
+<p>创建 <code>controllers/nginx-deployment.yaml</code> 的配置文件：</p>
+<pre><code>apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
+</code></pre>
+<p>可以看到：<strong>我们创建了 3 个副本数量的 Nginx，版本号为 1.14.2</strong>。</p>
+<p>通过下面的命令创建 Deployment：</p>
+<pre><code>kubectl apply -f https://k8s.io/examples/controllers/nginx-deployment.yaml
+</code></pre>
+<p>通过命令查看 Pod 的运行状态：</p>
+<pre><code>kubectl get pods --show-labels  -o wide
+</code></pre>
+<p>可以得到如下结果：</p>
+<pre><code>NAME                                READY   STATUS    RESTARTS   AGE    IP           NODE       NOMINATED NODE   READINESS GATES   LABELS
+nginx-deployment-66b6c48dd5-b92bv   1/1     Running   0          2m5s   172.18.0.3   minikube   &lt;none&gt;           &lt;none&gt;            app=nginx,pod-template-hash=66b6c48dd5
+nginx-deployment-66b6c48dd5-hshnm   1/1     Running   0          2m5s   172.18.0.4   minikube   &lt;none&gt;           &lt;none&gt;            app=nginx,pod-template-hash=66b6c48dd5
+nginx-deployment-66b6c48dd5-tfwfc   1/1     Running   0          2m5s   172.18.0.5   minikube   &lt;none&gt;           &lt;none&gt;            app=nginx,pod-template-hash=66b6c48dd5
+</code></pre>
+<p>下一步，我们使用命令查看 Deployment详细信息：</p>
+<pre><code>kubectl describe deployments
+</code></pre>
+<p>可以看到 Nginx 的版本为 1.14.2：</p>
+<pre><code>Pod Template:
+  Labels:  app=nginx
+  Containers:
+   nginx:
+    Image:        nginx:1.14.2
+    Port:         80/TCP
+    Host Port:    0/TCP
+    Environment:  &lt;none&gt;
+    Mounts:       &lt;none&gt;
+  Volumes:        &lt;none&gt;
+</code></pre>
+<p>下面我们尝试修改 Deployment，来更新 Nginx 的版本：</p>
+<pre><code>kubectl edit deployment.v1.apps/nginx-deployment
+</code></pre>
+<p>修改<code>.spec.template.spec.containers[0].image</code>字段，从 <code>nginx:1.14.2</code> 改成 <code>nginx:1.16.1</code>，输出如下：</p>
+<pre><code>deployment.apps/nginx-deployment edited
+</code></pre>
+<p>查看滚动升级状态：</p>
+<pre><code>kubectl rollout status deployment/nginx-deployment
+Waiting for deployment &quot;nginx-deployment&quot; rollout to finish: 1 out of 3 new replicas have been updated..
+</code></pre>
+<p>查看 Pod 的状态，你可以看到新的副本已经启动成功，旧版本的副本已经停止：</p>
+<pre><code> kubectl get pods --show-labels -o wide
+NAME                                READY   STATUS        RESTARTS   AGE   IP           NODE       NOMINATED NODE   READINESS GATES   LABELS
+nginx-deployment-559d658b74-8w29d   1/1     Running       0          2s    172.18.0.3   minikube   &lt;none&gt;           &lt;none&gt;            app=nginx,pod-template-hash=559d658b74
+nginx-deployment-559d658b74-df9rv   1/1     Running       0          77s   172.18.0.6   minikube   &lt;none&gt;           &lt;none&gt;            app=nginx,pod-template-hash=559d658b74
+nginx-deployment-559d658b74-ktzsh   1/1     Running       0          4s    172.18.0.5   minikube   &lt;none&gt;           &lt;none&gt;            app=nginx,pod-template-hash=559d658b74
+nginx-deployment-66b6c48dd5-b92bv   0/1     Terminating   0          27m   172.18.0.3   minikube   &lt;none&gt;           &lt;none&gt;            app=nginx,pod-template-hash=66b6c48dd5
+nginx-deployment-66b6c48dd5-hshnm   1/1     Terminating   0          27m   172.18.0.4   minikube   &lt;none&gt;           &lt;none&gt;            app=nginx,pod-template-hash=66b6c48dd5
+nginx-deployment-66b6c48dd5-tfwfc   0/1     Terminating   0          27m   172.18.0.5   minikube   &lt;none&gt;           &lt;none&gt;            app=nginx,pod-template-hash=66b6c48dd5
+</code></pre>
+<p>我们再来看一下 Nginx 的版本信息，查看是否更新成功：</p>
+<pre><code>Pod Template:
+  Labels:  app=nginx
+  Containers:
+   nginx:
+    Image:        nginx:1.16.1
+    Port:         80/TCP
+    Host Port:    0/TCP
+    Environment:  &lt;none&gt;
+    Mounts:       &lt;none&gt;
+  Volumes:        &lt;none&gt;
+</code></pre>
+<p>最后删除 Deployment 资源，确保下面的示例可以正常运行：</p>
+<pre><code>kubectl delete deployment.v1.apps/nginx-deployment
+</code></pre>
+<p>Kubernetes 中的版本更新已经完成了，通过滚动升级的方式，可以非常方便地进行版本更新。</p>
+<p>但是这个过程中，<strong>并没有灰度功能，这就相当于直接进行新版本全量发布了，很显然不符合生产环境的要求，下面我们就来学习如何在 Kubernetes 中结合版本更新做到金丝雀发布</strong></p>
+<p>首先创建 Nginx 的应用，并部署：</p>
+<pre><code>apiVersion: v1
+kind: Service
+metadata:
+  name: my-nginx-svc
+  labels:
+    app: nginx
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+  selector:
+    app: nginx
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-nginx
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
+</code></pre>
+<pre><code>kubectl apply -f https://k8s.io/examples/application/nginx-app.yaml
+</code></pre>
+<p>启动 Minikube 隧道，打通网络：</p>
+<pre><code>minikube tunnel
+</code></pre>
+<p>通过浏览器或者 curl 命令访问 minikube ip 获取 IP，可以得到如下结果：</p>
+<pre><code>curl -i http://127.0.0.1
+HTTP/1.1 200 OK
+Server: nginx/1.14.2
+Date: Fri, 12 Feb 2021 07:28:56 GMT
+Content-Type: text/html
+Content-Length: 612
+Last-Modified: Tue, 04 Dec 2018 14:44:49 GMT
+Connection: keep-alive
+ETag: &quot;5c0692e1-264&quot;
+Accept-Ranges: bytes
+</code></pre>
+<p>可以看到，Nginx是可以正常访问的，从返回的 header 中，你可以看到 Nginx 版本号。</p>
+<p>重复上面的 Kubernetes 版本更新时的步骤，部署一个新的版本：</p>
+<pre><code>kubectl apply -f https://k8s.io/examples/controllers/nginx-deployment.yaml
+</code></pre>
+<p><strong>修改 <code>nginx-deployment</code> 中 Nginx 的版本号，并为其增加新的标签 <code>track:canary</code>，具体路径为 <code>.spec.template.metadata.lables.track:canary</code></strong>：</p>
+<pre><code>kubectl edit deployment.v1.apps/nginx-deployment
+</code></pre>
+<p>继续查看 Pod，<strong>可以发现此时同时启动了两个版本</strong>，新启动的版本带有 track=canary 的标签：</p>
+<pre><code>kubectl get pods --show-labels -o wide
+NAME                               READY   STATUS    RESTARTS   AGE    IP           NODE       NOMINATED NODE   READINESS GATES   LABELS
+my-nginx-66b6c48dd5-82v69          1/1     Running   0          38m    172.18.0.8   minikube   &lt;none&gt;           &lt;none&gt;            app=nginx,pod-template-hash=66b6c48dd5
+my-nginx-66b6c48dd5-clzgn          1/1     Running   0          38m    172.18.0.7   minikube   &lt;none&gt;           &lt;none&gt;            app=nginx,pod-template-hash=66b6c48dd5
+my-nginx-66b6c48dd5-ngbql          1/1     Running   0          38m    172.18.0.4   minikube   &lt;none&gt;           &lt;none&gt;            app=nginx,pod-template-hash=66b6c48dd5
+nginx-deployment-975fd467c-7ghzx   1/1     Running   0          100s   172.18.0.6   minikube   &lt;none&gt;           &lt;none&gt;            app=nginx,pod-template-hash=975fd467c,track=canary
+nginx-deployment-975fd467c-lx5sz   1/1     Running   0          104s   172.18.0.5   minikube   &lt;none&gt;           &lt;none&gt;            app=nginx,pod-template-hash=975fd467c,track=canary
+nginx-deployment-975fd467c-vqm4m   1/1     Running   0          102s   172.18.0.3   minikube   &lt;none&gt;           &lt;none&gt;            app=nginx,pod-template-hash=975fd467c,track=canary
+</code></pre>
+<pre><code> app=nginx,pod-template-hash=975fd467c,track=canary
+</code></pre>
+<p>实际上，此时 Nginx 同时运行了两个版本，<strong>我们新发布的版本是 Nginx1.16.1，可以通过 <code>curl -i</code>的命令查看</strong>：</p>
+<pre><code>curl -i http://127.0.0.1
+HTTP/1.1 200 OK
+Server: nginx/1.16.1
+Date: Fri, 12 Feb 2021 07:57:30 GMT
+Content-Type: text/html
+Content-Length: 612
+Last-Modified: Tue, 13 Aug 2019 10:05:00 GMT
+Connection: keep-alive
+ETag: &quot;5d528b4c-264&quot;
+Accept-Ranges: bytes
+</code></pre>
+<p><strong><mark>多次运行 curl -i 命令查看结果，你可以发现，返回的 header 中同时存在 1.16.1 和 1.14.2 两个 Nginx 版本</mark></strong>。</p>
+<p>通过这样滚动升级的方式，Kubernetes 可以做到简单的金丝雀发布，这样的方式已经可以满足一些简单的场景，但是流量比例只能通过灰度单个 Pod 的方式控制。</p>
+<h2 id="2istio"><strong>2、Istio 中的金丝雀发布</strong></h2>
+<p>Istio和 Kubernetes 实现金丝雀发布的方式不太一样，<strong>Istio 通过 Envoy 强大的路由规则管理能力，可以灵活地控制对应版本的流量百分比</strong></p>
+<p>示意图如下，用户访问 productpage 的请求，<strong>内部流量会分别路由到 <code>reviews-v1</code>和<code>v2</code> 两个版本</strong>。</p>
+<p><img alt="Alt Image Text" src="../../images/chap2_6_1.png" title="body image" /> </p>
+<pre><code>kubectl get pods
+NAME                               READY   STATUS            RESTARTS   AGE
+details-v1-b87bfc85d-nd8v7         2/2     Running           0          2m12s
+productpage-v1-65576bb7bf-hj6mw    1/2     Running           0          2m11s
+ratings-v1-645b477958-gtrqd        0/2     PodInitializing   0          2m12s
+reviews-v1-987d495c-2x5rh          2/2     Running           0          2m12s
+reviews-v2-6c5bf657cf-t66hz        2/2     Running           0          2m12s
+reviews-v3-5f7b9f4f77-gcrsj        2/2     Running           0          2m12s
+</code></pre>
+<p>通过查看 <code>samples/bookinfo/platform/kube/bookinfo.yaml</code> 的部署配置文件，可以看到：有三个 reviews 服务的部署类型资源。通过前面 Kubernetes 灰度发布的内容我们可以知道，通过配置不同的 labels，可以让同一个服务的三个部署资源同时存在。</p>
+<p>这三个部署资源的服务镜像指向了三个不同的地址，分别是 <code>examples-bookinfo-reviews-v1:1.16.2</code>、<code>examples-bookinfo-reviews-v2:1.16.2</code> 和 <code>examples-bookinfo-reviews-v3:1.16.2</code>：</p>
+<pre><code>---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reviews-v1
+  labels:
+    app: reviews
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reviews
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: reviews
+        version: v1
+    spec:
+      serviceAccountName: bookinfo-reviews
+      containers:
+      - name: reviews
+        image: docker.io/istio/examples-bookinfo-reviews-v1:1.16.2
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: LOG_DIR
+          value: &quot;/tmp/logs&quot;
+        ports:
+        - containerPort: 9080
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: wlp-output
+          mountPath: /opt/ibm/wlp/output
+      volumes:
+      - name: wlp-output
+        emptyDir: {}
+      - name: tmp
+        emptyDir: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reviews-v2
+  labels:
+    app: reviews
+    version: v2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reviews
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: reviews
+        version: v2
+    spec:
+      serviceAccountName: bookinfo-reviews
+      containers:
+      - name: reviews
+        image: docker.io/istio/examples-bookinfo-reviews-v2:1.16.2
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: LOG_DIR
+          value: &quot;/tmp/logs&quot;
+        ports:
+        - containerPort: 9080
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: wlp-output
+          mountPath: /opt/ibm/wlp/output
+      volumes:
+      - name: wlp-output
+        emptyDir: {}
+      - name: tmp
+        emptyDir: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reviews-v3
+  labels:
+    app: reviews
+    version: v3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reviews
+      version: v3
+  template:
+    metadata:
+      labels:
+        app: reviews
+        version: v3
+    spec:
+      serviceAccountName: bookinfo-reviews
+      containers:
+      - name: reviews
+        image: docker.io/istio/examples-bookinfo-reviews-v3:1.16.2
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: LOG_DIR
+          value: &quot;/tmp/logs&quot;
+        ports:
+        - containerPort: 9080
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: wlp-output
+          mountPath: /opt/ibm/wlp/output
+      volumes:
+      - name: wlp-output
+        emptyDir: {}
+      - name: tmp
+        emptyDir: {}
+</code></pre>
+<p>我们在页面中，反复刷新<code>http://127.0.0.1/productpage</code>页面，可以看到不同的三种 reviews 的显示。</p>
+<p><img alt="Alt Image Text" src="../../images/chap2_6_2.png" title="body image" /> </p>
+<p>通过上面的请求结果，我们可以看到，Istio 确实将流量路由到了不同的 reviews 版本上，但是这里我们还没有对 Istio 的路由规则做特殊配置<strong>，所以这里的流量是均分的，你也可以理解为和 Kubernetes 的版本灰度策略是一致的</strong>。</p>
+<p>下面我们创建一个 reviews 的路由规则，为了方便验证，这个配置将所有流量指向 reviews 的 v1 版本：</p>
+<pre><code>kubectl apply -f - &lt;&lt;EOF
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: reivews
+spec:
+  hosts:
+    - reviews
+  http:
+  - route:
+    - destination:
+        host: reviews
+        subset: v1
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: reviews
+spec:
+  host: reviews
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+  - name: v2
+    labels:
+      version: v2
+  - name: v3
+    labels:
+      version: v3
+EOF
+</code></pre>
+<p>此时，我们无论如何刷新页面，都会发现页面的显示内容，总是停留在 reviews 的 v1 版本。</p>
+<p>下面我们再做出一些改动，修改 Istio 路由配置，<strong>将 90% 的流量指向 v1 版本，10% 的流量指向 v2 版本</strong>，以达到我们最开始的需求——精准流量的金丝雀发布：</p>
+<p><img alt="Alt Image Text" src="../../images/chap2_6_2.png" title="body image" /> </p>
+<pre><code>$ kubectl apply -f - &lt;&lt;EOF
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: reivews
+spec:
+  hosts:
+    - reviews
+  http:
+  - route:
+    - destination:
+        host: reviews
+        subset: v1
+      weight: 90
+    - destination:
+        host: reviews
+        subset: v2
+      weight: 10
+EOF
+</code></pre>
+<p>成功执行上述命令，<strong>我们反复刷新 productpage 页面，可以发现大概有 10% 的流量被路由到了新的 reviews v2 版本</strong>。</p>
+<p><img alt="Alt Image Text" src="../../images/chap2_6_3.png" title="body image" /> </p>
+<p>现实场景中，我们可以根据需求灵活地设置 reviews v1 版本和 v2 版本的流量比例，比如设置 v2 版本流量比例为 1%，用于金丝雀发布，这样的方式相较于 Kubernetes 启动 100 个 pod 进行金丝雀发布，要灵活得多。</p>
+<p>在金丝雀发布的过程中，<strong>通过不断增加 v2 的流量比例达到精准流量灰度发布的目的</strong>，配合 Metrics 监控指标，可以随时自动调整 v2 的比例，以减少新版本出问题时对生产环境的影响。随着 v2 版本的流量不断增大，最终彻底替代 v1 版本成为线上正式版本，整个金丝雀发布也就结束了。</p>
+<p>当然需要注意的是，在整个过程中你应该灵活调整 v1 和 v2 版本的 Kubernetes 副本数量，或者配合 Kubernetes 的 HPA，以达到自动扩缩容的目的：</p>
+<pre><code>$ kubectl autoscale deployment reviews-v1 --cpu-percent=50 --min=1 --max=10
+$ kubectl autoscale deployment reviews-v2 --cpu-percent=50 --min=1 --max=10
+</code></pre>
+<p>Istio 中另一个强大的功能：<strong>针对 header 设置路由策略，以达到金丝雀测试的目的</strong>。简单来说，就是针对不同用户或不同的客户端版本（针对测试人员单独发布的测试版本），进行精准的流量路由。</p>
+<h2 id="3istio"><strong>3、Istio 金丝雀测试</strong></h2>
+<p>首先我们创建一个 VirtualService 配置，将登录用户名为 testuser 的用户指向测试版本 v2 和 v3，<strong>其中 v3 流量占比 90%，v2 流量占比 10%。</strong></p>
+<p>这个版本专门用于 testuser 的测试人员进行新版本的测试，其他登录用户全部路由到 v1 版本：</p>
+<pre><code>kubectl apply -f - &lt;&lt;EOF
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: reviews
+spec:
+  hosts:
+    - reviews
+  http:
+  - match:
+    - headers:
+        end-user:
+          exact: testuser
+    route:
+    - destination:
+        host: reviews
+        subset: v2
+      weight: 10
+    - destination:
+        host: reviews
+        subset: v3
+      weight: 90
+  - route:
+    - destination:
+        host: reviews
+        subset: v1
+EOF
+</code></pre>
+<p>执行成功后，我们反复访问 productpage 页面，发现流量大部分都路由到了 v3 版本，少量流量路由到了 v2 版本。</p>
+<p><img alt="Alt Image Text" src="../../images/chap2_6_4.png" title="body image" /> </p>
+<p>至此，我们就完成了 Istio 的金丝雀测试。</p>
+<p><img alt="Alt Image Text" src="../../images/chap2_6_5.png" title="body image" /> </p>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+    <nav class="md-footer__inner md-grid" aria-label="页脚" >
+      
+        
+        <a href="../5chap3_ingress_egress/" class="md-footer__link md-footer__link--prev" aria-label="上一页: 第五节 Ingress 和 Egress：入口流量和出口流量控制" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                上一页
+              </span>
+              第五节 Ingress 和 Egress：入口流量和出口流量控制
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../7chap3_monitor/" class="md-footer__link md-footer__link--next" aria-label="下一页: 第七节 如何利用组件做到服务的可观测性" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                下一页
+              </span>
+              第七节 如何利用组件做到服务的可观测性
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2021-9999 Jacob Xi
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.ecf98df9.min.js", "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.config.lang": "ja", "search.config.pipeline": "trimmer, stemmer", "search.config.separator": "[\\s\\-\uff0c\u3002]+", "search.placeholder": "\u641c\u7d22", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version.title": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.39f04ddb.min.js"></script>
+      
+    
+  </body>
+</html>

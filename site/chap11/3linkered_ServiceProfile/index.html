@@ -1,0 +1,2586 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Jacob's Istio & Service Mesh Tutorial">
+      
+      
+        <meta name="author" content="Jacob Xi">
+      
+      
+        <link rel="canonical" href="https://chao-xi.github.io/jxistiobook/chap11/3linkered_ServiceProfile/">
+      
+      <link rel="icon" href="../../images/logo.jpeg">
+      <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.5.2">
+    
+    
+      
+        <title>3 Linkerd 通过 ServiceProfile 实现超时和重试 - Jacob Istio & Service Mesh E-Book</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.9f9400aa.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.cbb835fc.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#00bdd6">
+        
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="cyan" data-md-color-accent="cyan">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#3-linkerd-serviceprofile" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="Jacob Istio &amp; Service Mesh E-Book" class="md-header__button md-logo" aria-label="Jacob Istio & Service Mesh E-Book" data-md-component="logo">
+      
+  <img src="../../images/logo.jpeg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Jacob Istio & Service Mesh E-Book
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              3 Linkerd 通过 ServiceProfile 实现超时和重试
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Chao-Xi/jxistiobook.git" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jxistiobook
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Jacob Istio &amp; Service Mesh E-Book" class="md-nav__button md-logo" aria-label="Jacob Istio & Service Mesh E-Book" data-md-component="logo">
+      
+  <img src="../../images/logo.jpeg" alt="logo">
+
+    </a>
+    Jacob Istio & Service Mesh E-Book
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Chao-Xi/jxistiobook.git" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jxistiobook
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Welcome
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          第一章: 微服务和 Service Mesh 核心组件
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="第一章: 微服务和 Service Mesh 核心组件" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          第一章: 微服务和 Service Mesh 核心组件
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap1/1chap1_learn_SM/" class="md-nav__link">
+        第一节 Service Mesh 学习与架构分析
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap1/2chap1_service_register/" class="md-nav__link">
+        第二节 服务注册中心
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap1/3chap1_load_balancer/" class="md-nav__link">
+        第三节 负载均衡器
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap1/4chap1_router/" class="md-nav__link">
+        第四节 路由器及其限流熔断路由策略
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap1/5chap1_conn_pool/" class="md-nav__link">
+        第五节 连接池：阻塞式连接池和多路复用连接池的差异
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap1/6chap1_apigateway_kong/" class="md-nav__link">
+        第六节 微服务网关（Kong）：网关在微服务架构中的作用
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap1/7chap1_config_center/" class="md-nav__link">
+        第七节 微服务治理的配置中心
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap1/8chap1_trace/" class="md-nav__link">
+        第八节 Trace 更快速定位问题
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap1/9chap1_monitor/" class="md-nav__link">
+        第九节 利用 Prometheus 和 Grafana 收集监控数据
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          第二章: Service Mesh 实战
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="第二章: Service Mesh 实战" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          第二章: Service Mesh 实战
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap2/1chap2_sm_prods/" class="md-nav__link">
+        第一节 Service Mesh 开源产品中的技术选型
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap2/2chap2_sm_envoy/" class="md-nav__link">
+        第二节 最常用的数据面 Envoy介绍
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap2/3chap3_isitio_17/" class="md-nav__link">
+        第三节 Istio 入门：基于最新 1.7 版本的环境搭建和介绍
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap2/4chap3_xds/" class="md-nav__link">
+        第四节 xDS：控制面和数据面的通信桥梁
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap2/5chap3_ingress_egress/" class="md-nav__link">
+        第五节 Ingress 和 Egress：入口流量和出口流量控制
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap2/6chap3_canary/" class="md-nav__link">
+        第六节 金丝雀发布：金丝雀部署和版本控制
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap2/7chap3_monitor/" class="md-nav__link">
+        第七节 如何利用组件做到服务的可观测性
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap2/8chap3_SM_GO_PROJ/" class="md-nav__link">
+        第八节 Proj项目落地: Go 实现 Service Mesh
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap2/9chap3_pratice/" class="md-nav__link">
+        第九节 Service Mesh 落地和展望
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap2/10chap3_mesh/" class="md-nav__link">
+        第十节 Mesh的未来发展与可行性方向
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          第三章: Istio基础教学
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="第三章: Istio基础教学" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          第三章: Istio基础教学
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap3/0Service_Mesh/" class="md-nav__link">
+        第一节 服务网格(Service Mesh)是什么?
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap3/1isba_Frame_Tech/" class="md-nav__link">
+        第二节 Istio 架构与技术
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap3/2isba_Service_Find/" class="md-nav__link">
+        第三节 Istio 服务发现和 Pilot的架构机制
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap3/3isba_Gateway/" class="md-nav__link">
+        第四节 Gateway 设计与实现
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap3/4isba_Gray_release/" class="md-nav__link">
+        第五节 Istio 灰度发布与技术实现
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap3/5isba_Xds/" class="md-nav__link">
+        第六节 xDS协议解析
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap3/6isba_Mixer/" class="md-nav__link">
+        第七节 Mixer基础与实现
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_5">
+          第四章: Istio(1.10.3)-Bookinfo 流量管理
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="第四章: Istio(1.10.3)-Bookinfo 流量管理" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          第四章: Istio(1.10.3)-Bookinfo 流量管理
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap4/1Istio_Intro/" class="md-nav__link">
+        第一节 2021 Service Mesh & Istio 介绍/安装(1.10.3)
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap4/2Istio_flow_control/" class="md-nav__link">
+        第二节 使用 Istio 实现非侵入流量治理
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap4/3Istio_fault_inject/" class="md-nav__link">
+        第三节 Istio 流量管理之故障注入
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap4/4Istio_ServiceEntry_issue/" class="md-nav__link">
+        第四节 Istio ServiceEntry 的填坑之路
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_6">
+          第五章: Istio 高级教学与实践
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="第五章: Istio 高级教学与实践" data-md-level="1">
+        <label class="md-nav__title" for="__nav_6">
+          <span class="md-nav__icon md-icon"></span>
+          第五章: Istio 高级教学与实践
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/1Service_Mesh_Intro/" class="md-nav__link">
+        第一节 服务网格的基本特征
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/2Istio_Intro/" class="md-nav__link">
+        第二节 Istio 基本介绍
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/3Istro_ServiceM_Prac/" class="md-nav__link">
+        第三节 Istio, Service Mesh 快速入门（Istio 1.1.16）
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/4Istio_Helm/" class="md-nav__link">
+        第四节 用Helm部署Istio
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/5Istio_funcs/" class="md-nav__link">
+        第五节 Istio 常用功能 （自动/手动部署Istio应用）
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/6Istio_func2_grafana_prometheus/" class="md-nav__link">
+        第六节 使用 Istio Dashboard Grafana / Prometheus
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/7Istio_fun3_Jager/" class="md-nav__link">
+        第七节 使用 Istio Dashboard
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/8Istio_func4_Kiali/" class="md-nav__link">
+        第八节 使用Kiali
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/9Istio_http1/" class="md-nav__link">
+        第九节 HTTPS流量管理(目标规则/默认路由/流量的拆分和迁移)
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/10Istio_http2/" class="md-nav__link">
+        第十节 HTTPS流量管理(金丝雀部署/源服务进行路由/URI进行重定向)
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/11Istio_http3/" class="md-nav__link">
+        第十一节 HTTPS流量管理（通信超时/故障重试/入口~出口流量管理）
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/12Istio_http4/" class="md-nav__link">
+        第十二节 HTTPS流量管理（服务熔断/故障注入测试/注入中断/流量复制)
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/13Istio_Mixer1/" class="md-nav__link">
+        第十三节 Mixer 适配器的应用(简介/Denier访问控制/Listchecker访问控制)
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/14Istio_Mixer2/" class="md-nav__link">
+        第十四节 Mixer 适配器的应用(MemQuota服务限流/Mixer对象的定义/RedisQuota服务限流)
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/15Istio_Mixer3_prometheus/" class="md-nav__link">
+        第十五节 Mixer 适配器的应用 - 为Prometheus定义监控指标
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/16Istio_Mixer4_stdio/" class="md-nav__link">
+        第十六节 使用stdio输出自定义日志
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/17Istio_Mixer5_fluentd/" class="md-nav__link">
+        第十七节 使用Fluentd输出日志
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/18Istio_Sec1/" class="md-nav__link">
+        第十八节 Istio的安全加固（启用mTLS\加固概述)
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/19Istio_Sec2_RBAC/" class="md-nav__link">
+        第十九节 Istio的安全加固(RBAC设置\拍错）
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap5/20Istio_Usage/" class="md-nav__link">
+        第二十节 Istio的试用建议
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_7" type="checkbox" id="__nav_7" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_7">
+          第六章: 实验与教学bookinfo(istio-1.3)-old
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="第六章: 实验与教学bookinfo(istio-1.3)-old" data-md-level="1">
+        <label class="md-nav__title" for="__nav_7">
+          <span class="md-nav__icon md-icon"></span>
+          第六章: 实验与教学bookinfo(istio-1.3)-old
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap6/1Istio_install_docker/" class="md-nav__link">
+        L1 Docker for Mac安装istio(istio-1.3)
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap6/2BookInfo_1/" class="md-nav__link">
+        L2 基于Bookinfo的流量管理配置(服务版本/基于权重/基于请求内容)
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap6/3BookInfo_2/" class="md-nav__link">
+        L3 基于Bookinfo的流量管理配置(延迟访问/中断访问/不同环境/服务网格外)
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_8" type="checkbox" id="__nav_8" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_8">
+          第七章: JenkinsX + Istio渐进式交付
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="第七章: JenkinsX + Istio渐进式交付" data-md-level="1">
+        <label class="md-nav__title" for="__nav_8">
+          <span class="md-nav__icon md-icon"></span>
+          第七章: JenkinsX + Istio渐进式交付
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap7/k8s_adv54_release/" class="md-nav__link">
+        L1 Kubernetes中的渐进式交付:蓝绿部署和金丝雀部署shipper/Istio/Flagger
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap7/k8s_adv56_jenkinsX/" class="md-nav__link">
+        L2 使用 Jenkins X 渐进式交付
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap7/k8s_adv57_Auto_Canary/" class="md-nav__link">
+        L3 使用 Jenkins X 渐进式交付:自动化金丝雀部署
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap7/k8s_isitio_gray/" class="md-nav__link">
+        L4 使用Rainbond+Istio实现灰度发布
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_9" type="checkbox" id="__nav_9" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_9">
+          第八章: Tetrate Istio基础培训与实验测试
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="第八章: Tetrate Istio基础培训与实验测试" data-md-level="1">
+        <label class="md-nav__title" for="__nav_9">
+          <span class="md-nav__icon md-icon"></span>
+          第八章: Tetrate Istio基础培训与实验测试
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap8/1service_mesh/" class="md-nav__link">
+        第一节 服务网格和 Istio 概览
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap8/2Istio_install/" class="md-nav__link">
+        第二节 安装 Istio
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap8/3Istio_mon/" class="md-nav__link">
+        第三节 可观察性：遥测和日志
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap8/4Istio_net_control/" class="md-nav__link">
+        第四节 流量管理
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap8/5Istio_net_control_exp/" class="md-nav__link">
+        第五节 流量管理实验与测试
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap8/6Istio_secruity/" class="md-nav__link">
+        第六节 Istio Secuirty
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap8/7Istio_adv_feas/" class="md-nav__link">
+        第七节 Istio高级功能
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap8/8Istio_trouble_shoot/" class="md-nav__link">
+        第八节 Istio 问题排查
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap8/9Istio_real_instance/" class="md-nav__link">
+        第九节 实际案例
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap8/10Istio_terms/" class="md-nav__link">
+        第十节 术语表
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_10" type="checkbox" id="__nav_10" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_10">
+          第九章: Istio日常操作与技巧
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="第九章: Istio日常操作与技巧" data-md-level="1">
+        <label class="md-nav__title" for="__nav_10">
+          <span class="md-nav__icon md-icon"></span>
+          第九章: Istio日常操作与技巧
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap9/1Istio_intro_ppt/" class="md-nav__link">
+        第一节 istio浅析 (Slide备案）
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap9/2Istio_security/" class="md-nav__link">
+        第二节 Istio 安全最佳实践
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap9/3Istio_service_entry/" class="md-nav__link">
+        第三节 记一次 Istio ServiceEntry 的填坑之路
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap9/4Istio_istio_skill/" class="md-nav__link">
+        第四节 使用 Istio 的十个技巧
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap9/24Istio_troubleshoot/" class="md-nav__link">
+        第五节 Istio 常见的 10 个异常分析
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap9/5istio_interview/" class="md-nav__link">
+        第五节 Istio面试
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap9/6k8s_mtls/" class="md-nav__link">
+        第六节 Kubernetes 的 mTLS 指南
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap9/8istio_mtls/" class="md-nav__link">
+        第七节 如何理解 Istio 中的 mTLS 流量加密？
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_11" type="checkbox" id="__nav_11" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_11">
+          第10章: Istio架构及发展
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="第10章: Istio架构及发展" data-md-level="1">
+        <label class="md-nav__title" for="__nav_11">
+          <span class="md-nav__icon md-icon"></span>
+          第10章: Istio架构及发展
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap10/1istio_linked_consul/" class="md-nav__link">
+        1 Istiovs.Linkerdvs.Consul：服务网格该怎么选择？
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chap10/2istio_ambient/" class="md-nav__link">
+        2 Istio Ambient Mesh 介绍
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_12" type="checkbox" id="__nav_12" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_12">
+          第11章: Linkerd
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="第11章: Linkerd" data-md-level="1">
+        <label class="md-nav__title" for="__nav_12">
+          <span class="md-nav__icon md-icon"></span>
+          第11章: Linkerd
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1linkered_sm/" class="md-nav__link">
+        1 Linkerd Service Mesh 快速上手
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../2linkered_index/" class="md-nav__link">
+        2 在 Linkerd 中获取应用的黄金指标
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          3 Linkerd 通过 ServiceProfile 实现超时和重试
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        3 Linkerd 通过 ServiceProfile 实现超时和重试
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    生成服务配置文件
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#linkerd-dashboard-per-route-metrics" class="md-nav__link">
+    Linkerd Dashboard 中查看 Per-Route Metrics
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#linkerd-cli-per-route-metrics" class="md-nav__link">
+    通过 Linkerd CLI 查看 Per-Route Metrics
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    重试与超时
+  </a>
+  
+    <nav class="md-nav" aria-label="重试与超时">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#per-route-metrics" class="md-nav__link">
+    使用 Per-Route Metrics 来确定何时重试和超时
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    配置重试
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    配置超时
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../4linkered_mtls/" class="md-nav__link">
+        4 在 Linkerd 中使用 mTLS 保护应用程序通信
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../5linkerd_flow_split/" class="md-nav__link">
+        5 在 Linkerd 中实现流量拆分功能
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../6linkered_prod/" class="md-nav__link">
+        6 在生产环境中使用 Linkerd
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../7linkered_ingress/" class="md-nav__link">
+        7 Linkerd 与 ingress-nginx 结合使用以及对服务的访问限制
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../8linkerd_212/" class="md-nav__link">
+        8 Linkerd 升级到全新的 2.12 版本
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_13" type="checkbox" id="__nav_13" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_13">
+          extra
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="extra" data-md-level="1">
+        <label class="md-nav__title" for="__nav_13">
+          <span class="md-nav__icon md-icon"></span>
+          extra
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../extra/mk_book/" class="md-nav__link">
+        GitHub+Travis+Mkdocs自动化构建文档库(Istio)
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    生成服务配置文件
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#linkerd-dashboard-per-route-metrics" class="md-nav__link">
+    Linkerd Dashboard 中查看 Per-Route Metrics
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#linkerd-cli-per-route-metrics" class="md-nav__link">
+    通过 Linkerd CLI 查看 Per-Route Metrics
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    重试与超时
+  </a>
+  
+    <nav class="md-nav" aria-label="重试与超时">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#per-route-metrics" class="md-nav__link">
+    使用 Per-Route Metrics 来确定何时重试和超时
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    配置重试
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    配置超时
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  <a href="https://github.com/Chao-Xi/jxistiobook.git/edit/master/docs/chap11/3linkered_ServiceProfile.md" title="编辑此页" class="md-content__button md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
+  </a>
+
+
+<h1 id="3-linkerd-serviceprofile"><strong>3 Linkerd 通过 ServiceProfile 实现超时和重试</strong></h1>
+<p>Linkerd 服务网格解决的最重要问题之一是可观察性：提供服务行为的详细视图，<strong>Linkerd 对可观察性的价值主张是，它可以为你的 HTTP 和 gRPC 服务提供黄金指标，这些都是自动执行，无需更改代码或开发人员参与的</strong>。</p>
+<p>开箱即用，Linkerd 在每个服务的基础上提供这些指标：<strong>跨越服务的所有请求，无论这些请求是什么</strong>。然而，有时需要获得更细粒度的指标。</p>
+<p>例如前面的 Emojivoto 应用程序中的 Emoji 微服务，前面章节中看到的 Linkerd 报告的指标是在该服务的所有端点上聚合的。在实际场景下面，我们可能还希望看到<strong>特定端点的成功率或延迟</strong>，例如，一个端点可能对服务特别关键，或者特别慢。</p>
+<p>为了解决这个问题，<strong>Linkerd 使用了服务配置文件（service profile）的概念，服务配置文件是一个可选的配置，它通知 Linkerd 对服务的不同类型的请求，按其路由进行分类</strong>。路由只是一个端点（对于 gRPC）或一个 HTTP verb 和端点（对于 HTTP）。</p>
+<p>服务配置文件允许 Linkerd 为服务提供每个路由（pre-route）而不是每个服务指标，在后面的章节中，我们还将看到服务配置文件允许 Linkerd 对服务执行重试和超时等配置，但是现在我们先只关注指标。</p>
+<p>另外需要注意的是服务配置文件并不是简单的服务与 Linkerd 一起运行所必需的，它们是可选的配置位，可以实现 Linkerd 的更高级行为，它们也是 Linkerd 使用 Kubernetes CRD 的少数示例之一。接下来我们仍然通过 Emojivoto 应用说明下服务配置文件的使用。</p>
+<h2 id="_1"><strong>生成服务配置文件</strong></h2>
+<p>Linkerd 的服务配置文件是通过实例化一个名为 ServiceProfile 的 Kubernetes CRD 来实现的。</p>
+<p><strong>ServiceProfile 会枚举 Linkerd 为该服务期望的路由</strong>。</p>
+<p>我们可以手动创建 ServiceProfile，但也可以自动生成它们。</p>
+<p><strong>Linkerd CLI 有一个 profile 命令，可以通过几种不同的方式来生成服务配置文件</strong>。最常见的方法之一是从服务的现有资源（如 OpenAPI/Swagger 规范或 protobuf 文件）生成它们。</p>
+<pre><code>$ linkerd profile -h
+Output service profile config for Kubernetes.
+
+Usage:
+  linkerd profile [flags] (--template | --open-api file | --proto file) (SERVICE)
+
+Examples:
+  # Output a basic template to apply after modification.
+  linkerd profile -n emojivoto --template web-svc
+
+  # Generate a profile from an OpenAPI specification.
+  linkerd profile -n emojivoto --open-api web-svc.swagger web-svc
+
+  # Generate a profile from a protobuf definition.
+  linkerd profile -n emojivoto --proto Voting.proto vote-svc
+
+
+Flags:
+  -h, --help               help for profile
+      --ignore-cluster     Output a service profile through offline generation
+  -n, --namespace string   Namespace of the service
+      --open-api string    Output a service profile based on the given OpenAPI spec file
+      --proto string       Output a service profile based on the given Protobuf spec file
+      --template           Output a service profile template
+
+Global Flags:
+      --api-addr string            Override kubeconfig and communicate directly with the control plane at host:port (mostly for testing)
+      --as string                  Username to impersonate for Kubernetes operations
+      --as-group stringArray       Group to impersonate for Kubernetes operations
+      --cni-namespace string       Namespace in which the Linkerd CNI plugin is installed (default &quot;linkerd-cni&quot;)
+      --context string             Name of the kubeconfig context to use
+      --kubeconfig string          Path to the kubeconfig file to use for CLI requests
+  -L, --linkerd-namespace string   Namespace in which Linkerd is installed ($LINKERD_NAMESPACE) (default &quot;linkerd&quot;)
+      --verbose                    Turn on debug logging
+</code></pre>
+<p>上面的帮助命令输出列出了可用于为 <code>ServiceProfile</code> 资源生成 <code>YAML</code> 的标志，可以看到</p>
+<p><strong>其中就有一个 <code>--open-api</code> 标志，用于指示 ServiceProfile 资源将从指定的 OpenAPI 或 Swagger 文档来生成服务配置文件，通过 <code>--proto</code> 标志可以指示从指定的<code>Protobuf</code> 文件生成服务配置文件。</strong></p>
+<p>Emojivoto 的 web 服务有一个简单的 Swagger 规范文件，内容如下所示：</p>
+<pre><code># web.swagger
+openapi: 3.0.1
+version: v10
+paths:
+  /api/list:
+    get: {}
+  /api/vote:
+    get: {}
+</code></pre>
+<p>现在我们就可以利用上面的规范文件来生成一个 ServiceProfile 对象，命令如下所示：</p>
+<pre><code>$ linkerd profile -n emojivoto --open-api web.swagger web-svc &gt; web-sp.yaml
+</code></pre>
+<p>上述命令将输出服务 <code>web-svc</code> 的 ServiceProfile 资源清单文件。请注意，就像 linkerd install 命令一样，<code>linkerd profile</code> 命令也只生成 YAML，它不会将 YAML 应用到集群，所以我们将输出重定向到 <code>web-sp.yaml</code> 文件，对应生成的文件内容如下所示：</p>
+<pre><code>apiVersion: linkerd.io/v1alpha2
+kind: ServiceProfile
+metadata:
+  creationTimestamp: null
+  name: web-svc.emojivoto.svc.cluster.local
+  namespace: emojivoto
+spec:
+  routes:
+    - condition:
+        method: GET
+        pathRegex: /api/list
+      name: GET /api/list
+    - condition:
+        method: GET
+        pathRegex: /api/vote
+      name: GET /api/vote
+</code></pre>
+<p><strong>上面的资源清单文件就是一个典型的 <code>ServiceProfile</code> 对象的声明方式，<code>spec.routes</code>用来声明所有的路由规则，每条路由中包含一个 <code>name</code> 和 <code>condition</code> 属性</strong>：</p>
+<ul>
+<li>name 用来表示路由的名称，用于显示使用。</li>
+<li>condition 用来描述路由的规范。上例中生成的 condition 有两个字段：<ul>
+<li>method：与请求匹配的 HTTP 方法。</li>
+<li><strong>pathRegex：用于匹配路径的正则表达式</strong>。在我们的示例中，这些是完全匹配的规则，但通常这些是正则表达式。</li>
+</ul>
+</li>
+</ul>
+<p>除了通过 OpenAPI 可以生成服务配置文件之外，也可以通过 Protobuf 来生成，gRPC 协议使用 protobuf 对请求和响应进行编码和解码，这意味着每个 gRPC 服务也有一个 protobuf 定义。</p>
+<p>Emojivoto 应用的 Voting 微服务就包含有 protobuf 定义，文件内容如下所示：</p>
+<pre><code>syntax = &quot;proto3&quot;;
+option go_package = &quot;github.com/buoyantio/emojivoto/proto&quot;;
+
+package emojivoto.v1;
+
+message VotingResult {
+    string Shortcode = 1;
+    int32 Votes = 2;
+}
+
+message VoteRequest {
+}
+
+message VoteResponse {
+}
+
+message ResultsRequest {
+}
+
+message ResultsResponse {
+    repeated VotingResult results = 1;
+}
+
+service VotingService {
+    rpc VotePoop (VoteRequest) returns (VoteResponse);
+    rpc VoteJoy (VoteRequest) returns (VoteResponse);
+    rpc VoteSunglasses (VoteRequest) returns (VoteResponse);
+    ......省略部分内容
+}
+</code></pre>
+<p>同样现在我们可以使用 linkerd profile 命令来生成对应的 ServiceProfile 对象：</p>
+<pre><code>$ linkerd profile -n emojivoto --proto Voting.proto voting-svc &gt; voting-sp.yaml
+</code></pre>
+<p>此命令的输出结果将比上一个命令的输出多很多，因为 <code>Voting.proto</code> 文件定义了更多路由，我们可以查看下 <code>voting-sp.yaml</code>文件，并将其与上面创建的 <code>ServiceProfile</code> 资源进行比较。</p>
+<p>此外我们还可以用另外一种方法来动态生成 ServiceProfile，Linkerd 可以监控在指定时间段内进入的实时请求，并从中收集路由数据。</p>
+<p>对于不了解服务提供的内部路由的集群管理员来说，这是一个非常强大的功能，因为 Linkerd 会负责处理请求并将它们写入文件，该特性的底层原理是上一节中提到的实时观察请求的 Tap 功能。</p>
+<p>现在，让我们使用 linkerd profile 命令监控 emoji 服务 10 秒并将输出重定向到文件，与前面学习的所有命令一样，输出会打印到终端，并且此命令会将输出重定向到文件，因此我们只需运行该命令（并等待 10 秒）一次。</p>
+<p>Linkerd Viz 扩展也有自己的配置文件子命令，可以与 Tap 功能一起使用，从实时流量中生成服务配置文件！如下命令所示：</p>
+<pre><code>$ linkerd viz profile emoji-svc --tap deploy/emoji --tap-duration 10s -n emojivoto &gt; emoji-sp.yaml
+</code></pre>
+<p>当请求发送到 emoji 服务时，这些路由通过 Tap 功能收集。我<strong>们也可以使用 Emoji.proto 文件生成服务配置文件，然后去比较使用 <code>--proto</code> 和 <code>--tap</code> 标志创建的 ServiceProfile 资源的定义</strong>。</p>
+<p>生成的 ServiceProfile 资源清单文件内容如下所示：</p>
+<pre><code># emoji-sp.yaml
+apiVersion: linkerd.io/v1alpha2
+kind: ServiceProfile
+metadata:
+  creationTimestamp: null
+  name: emoji-svc.emojivoto.svc.cluster.local
+  namespace: emojivoto
+spec:
+  routes:
+    - condition:
+        method: POST
+        pathRegex: /emojivoto\.v1\.EmojiService/FindByShortcode
+      name: POST /emojivoto.v1.EmojiService/FindByShortcode
+    - condition:
+        method: POST
+        pathRegex: /emojivoto\.v1\.EmojiService/ListAll
+      name: POST /emojivoto.v1.EmojiService/ListAll
+</code></pre>
+<p>如果你需要手动编写服务配置文件，<strong>linkerd profile 命令有一个 <code>--template</code> 标志，可以生成 ServiceProfile 资源的脚手架，然后可以使用你的服务的详细信息对其进行更新</strong>。</p>
+<pre><code>$ linkerd profile --template -n emojivoto emoji-svc
+### ServiceProfile for emoji-svc.emojivoto ###
+apiVersion: linkerd.io/v1alpha2
+kind: ServiceProfile
+metadata:
+  name: emoji-svc.emojivoto.svc.cluster.local
+  namespace: emojivoto
+spec:
+  # A service profile defines a list of routes.  Linkerd can aggregate metrics
+  # like request volume, latency, and success rate by route.
+  routes:
+  - name: '/authors/{id}'
+
+    # Each route must define a condition.  All requests that match the
+    # condition will be counted as belonging to that route.  If a request
+    # matches more than one route, the first match wins.
+    condition:
+      # The simplest condition is a path regular expression.
+      pathRegex: '/authors/\d+'
+
+      # This is a condition that checks the request method.
+      method: POST
+
+      # If more than one condition field is set, all of them must be satisfied.
+      # This is equivalent to using the 'all' condition:
+      # all:
+      # - pathRegex: '/authors/\d+'
+      # - method: POST
+
+      # Conditions can be combined using 'all', 'any', and 'not'.
+      # any:
+      # - all:
+      #   - method: POST
+      #   - pathRegex: '/authors/\d+'
+      # - all:
+      #   - not:
+      #       method: DELETE
+      #   - pathRegex: /info.txt
+
+    # A route may be marked as retryable.  This indicates that requests to this
+    # route are always safe to retry and will cause the proxy to retry failed
+    # requests on this route whenever possible.
+    # isRetryable: true
+
+    # A route may optionally define a list of response classes which describe
+    # how responses from this route will be classified.
+    responseClasses:
+
+    # Each response class must define a condition.  All responses from this
+    # route that match the condition will be classified as this response class.
+    - condition:
+        # The simplest condition is a HTTP status code range.
+        status:
+          min: 500
+          max: 599
+
+        # Specifying only one of min or max matches just that one status code.
+        # status:
+        #   min: 404 # This matches 404s only.
+
+        # Conditions can be combined using 'all', 'any', and 'not'.
+        # all:
+        # - status:
+        #     min: 500
+        #     max: 599
+        # - not:
+        #     status:
+        #       min: 503
+
+      # The response class defines whether responses should be counted as
+      # successes or failures.
+      isFailure: true
+
+    # A route can define a request timeout.  Any requests to this route that
+    # exceed the timeout will be canceled.  If unspecified, the default timeout
+    # is '10s' (ten seconds).
+    # timeout: 250ms
+
+  # A service profile can also define a retry budget.  This specifies the
+  # maximum total number of retries that should be sent to this service as a
+  # ratio of the original request volume.
+  # retryBudget:
+  #   The retryRatio is the maximum ratio of retries requests to original
+  #   requests.  A retryRatio of 0.2 means that retries may add at most an
+  #   additional 20% to the request load.
+  #   retryRatio: 0.2
+
+  #   This is an allowance of retries per second in addition to those allowed
+  #   by the retryRatio.  This allows retries to be performed, when the request
+  #   rate is very low.
+  #   minRetriesPerSecond: 10
+
+  #   This duration indicates for how long requests should be considered for the
+  #   purposes of calculating the retryRatio.  A higher value considers a larger
+  #   window and therefore allows burstier retries.
+  #   ttl: 10s
+</code></pre>
+<p>上面的命令会输出包含 ServiceProfile 资源的字段和每个字段的详细说明，如果你需要 ServiceProfile 定义的快速参考，就可以使用 <code>--template</code> 标志！</p>
+<p>到这里我们就了解了如何生成 ServiceProfile 资源清单文件，接下来我们来查看服务配置文件中定义的每个路由的指标数据。</p>
+<h2 id="linkerd-dashboard-per-route-metrics"><strong>Linkerd Dashboard 中查看 Per-Route Metrics</strong></h2>
+<p>上面我们了解了如何使用 <code>linkerd profile</code> 命令来生成 <code>ServiceProfile</code> 资源清单文件，现在让我们重新运行生成命令，并直接将生成的 ServiceProfile 对象直接应用到集群中：</p>
+<pre><code>$ linkerd profile -n emojivoto --open-api web.swagger web-svc | kubectl apply -f -
+serviceprofile.linkerd.io/web-svc.emojivoto.svc.cluster.local created
+$ linkerd profile -n emojivoto --proto Voting.proto voting-svc | kubectl apply -f -
+serviceprofile.linkerd.io/voting-svc.emojivoto.svc.cluster.local created
+$ linkerd viz profile emoji-svc --tap deploy/emoji --tap-duration 10s -n emojivoto | kubectl apply -f -
+serviceprofile.linkerd.io/emoji-svc.emojivoto.svc.cluster.local created
+</code></pre>
+<p>当上面的命令运行成功后，让我们打开 Linkerd 仪表盘来查看下相关指标，我们先导航到 Web Deployment 下查看每个路由的指标。</p>
+<p><img alt="Alt Image Text" src="../../images/chap11_3_1.png" title="body image" /></p>
+<p>从上图可以看出来在 <code>ROUTE METRICS</code> 选项卡下面相比默认的 <code>[DEFAULT]</code> 路由多了两个路由，这两个路由就是我们通过 <code>linkerd profile --open-api</code> 命令从<code>web.swagger</code> 文件中生成的两条路由，每行列中，我们可以看到这两条路由的每条指标数据。</p>
+<p>在部署 ServiceProfile 对象之前，我们只能看到 web 服务的聚合指标，部署后我们现在可以看到 <code>/api/list</code> 这条路由是 100% 成功的，<code>/api/vote</code> 路由有一些错误。 </p>
+<p>同样在服务配置文件之前，我们只知道 web 服务正在返回错误，现在我们错误是来自与 <code>/api/vote</code> 路由，另外的 <code>[DEFAULT]</code> 默认路由表示当服务配置文件中没有路由匹配请求时 Linkerd 使用的路由，其会捕获在 <code>ServiceProfile</code> 之前观察到的任何流量</p>
+<p>现在我们再去看看另外的服务配置文件，其中的 Voting 服务比较具有代表性，因为它包含很多路由。</p>
+<p>在 <code>Linkerd Dashboard</code> 页面上在 <code>emojivoto</code> 命名空间上进入 <code>Voting Deployment</code>，切换到 <code>ROUTE METRICS</code> 选项卡。</p>
+<p>我们会该服务下有非常多的路由，上面的 web 服务我们知道 <code>/api/vote</code> 路由的请求成功率低于 100%，所有 <code>voting</code> 服务中的每条路由信息都有可能会提供相关的错误信息，由于路由非常多，我们可以直接按照 <code>Success Rate</code> 这一列进行升序排序，正常就可以看到 <code>VoteDoughnut</code> 路由成功率为 0。</p>
+<p><img alt="Alt Image Text" src="../../images/chap11_3_2.png" title="body image" /></p>
+<h2 id="linkerd-cli-per-route-metrics"><strong>通过 Linkerd CLI 查看 Per-Route Metrics</strong></h2>
+<p>上面我们已经了解了如何通过 Dashboard 来查看 <code>Emojivoto</code> 应用中服务的每个路由指标了，接下来我们再尝试使用 <code>CLI</code>工具查看每个路由的指标。</p>
+<p><strong><code>linkerd viz routes</code> 命令使用与仪表盘使用的相同指标，让我们看看使用 Linkerd CLI 来查看 emoji 服务的路由</strong>，如下所示：</p>
+<pre><code>$ linkerd viz routes deploy/emoji -n emojivoto
+ROUTE                                               SERVICE   SUCCESS      RPS   LATENCY_P50   LATENCY_P95   LATENCY_P99
+POST /emojivoto.v1.EmojiService/FindByShortcode   emoji-svc   100.00%   1.0rps           1ms           1ms           1ms
+POST /emojivoto.v1.EmojiService/ListAll           emoji-svc   100.00%   1.0rps           1ms           1ms           1ms
+[DEFAULT]                                         emoji-svc         -        -             -             -             -
+</code></pre>
+<p>我们可以看到，为 emoji 服务定义的两条路由都是成功的，并且在 1ms 的时间内处理了请求，可以看出这些路由是健康的。还要注意我们的默认路由，标记为 [DEFAULT]，同样这是 Linkerd 在服务配置文件中没有与请求匹配的路由时使用的路由。</p>
+<p>现在我们用同样的方式通过 <code>linkerd viz routes</code> 命令来查看 voting 和 web 服务的路由，如下所示：</p>
+<pre><code>$ linkerd viz routes deploy/web -n emojivoto
+ROUTE           SERVICE   SUCCESS      RPS   LATENCY_P50   LATENCY_P95   LATENCY_P99
+GET /api/list   web-svc   100.00%   1.0rps           1ms           1ms           1ms
+GET /api/vote   web-svc    88.33%   1.0rps           2ms           7ms           9ms
+[DEFAULT]       web-svc         -        -             -             -             -
+
+$ linkerd viz routes deploy/voting -n emojivoto
+ROUTE                             SERVICE   SUCCESS      RPS   LATENCY_P50   LATENCY_P95   LATENCY_P99
+Results                        voting-svc         -        -             -             -             -
+Vote100                        voting-svc   100.00%   0.0rps           1ms           1ms           1ms
+VoteBacon                      voting-svc         -        -             -             -             -
+VoteBalloon                    voting-svc         -        -             -             -             -
+# ......
+</code></pre>
+<p>voting 服务的输出很长，因为它有很多路由，因此可以通过 <code>grep</code> 命令来查找 <code>VoteDoughnut</code> 路由：<code>linkerd viz routes deploy/voting -n emojivoto | grep VoteDoughnut</code>（或者可以使用 -o json 标志以及 jq 之类的工具来解析输出）。</p>
+<p>到这里我们就了解了 Linkerd 的服务配置文件功能，目前我们暂时专注于服务配置文件的可观测性功能，我们可以查看之前了解的每个路由的黄金指标。接下来我们将进一步深入了解 ServiceProfile 并探索 Linkerd 的重试和超时功能。</p>
+<h2 id="_2"><strong>重试与超时</strong></h2>
+<p>接下来我们将来了解如何使用 ServiceProfile 配置超时、重试。Linkerd 可以通过流量拆分、负载均衡、重试和超时等功能来确保可靠性，这些中的每一个都在提高系统的整体可靠性方面发挥着重要作用。</p>
+<p>但是这些特性究竟能增加什么样的可靠性呢？归根结底是 Linkerd 可以帮助防止瞬时故障。如果服务完全关闭，或始终返回失败，或始终挂起，那么再多的重试或负载均衡都无济于事。</p>
+<p>但是，如果服务的一个实例出现问题，或者潜在问题只是暂时的，那么这个时候 Linkerd 就可以派上用场了，而且这些部分的、暂时的故障是分布式系统的最常出现的问题！</p>
+<p>当涉及到 Linkerd 的负载均衡、重试和超时的核心可靠性特性时，这里有两件重要的事情需要理解（流量分割，也是一个可靠性特性，但有点不太一样，我们将在后面的章节中来解决这个问题）：</p>
+<ul>
+<li>所有这些技术都发生在客户端：进行调用的代理是执行这些功能的代理，而不是服务器端的代理。如果你的服务器是网格的，但你的客户端不是的，那么将不会在两者之间的调用中启用这些功能！</li>
+<li>这三个特性一起使用效果最好。没有重试，超时没有什么价值；如果没有负载均衡，重试几乎也没有什么价值。</li>
+</ul>
+<p>我们可以先了解下负载均衡，Linkerd 会自动在可能的目的地之间对请求进行负载均衡，请注<strong>意请</strong>求这个词 - 与四层或 TCP 负载均衡不同，它会均衡连接，Linkerd 将建立到可能的端点集的连接，并在所有这些连接之间均衡请求。这允许对流量进行更细粒度的控制，并且在后台，Linkerd 的方法非常复杂，<strong>使用诸如服务器延迟的指数加权移动平均（EWMA）</strong> 之类的技术来优化请求的去向；尽可能跨端点汇集连接；并自动将 HTTP/1.1 流量升级到代理之间的 HTTP/2 连接。然而，从我们的角度来看，并没有进行任何配置，只需要知道：<strong>Linkerd 会自动在其端点之间平衡请求</strong>。</p>
+<p>接着看看超时，超时是在路由上设置最长时间的一种方式。比如你的服务上有一个名为 <code>getValue()</code> 的路由，而 <code>getValue()</code> 的性能是不可预测的：大多数时候 <code>getValue()</code> 会在 10 毫秒内返回，但有时需要 10 分钟才能返回，也许是在某些有争议的资源上存在锁竞争。如果没有超时，调用 <code>getValue()</code>将需要 10 毫秒到 10 分钟之间的任何时间，但是如果设置了 500 毫秒的超时时间，那么 <code>getValue()</code> 则最多需要 500 毫秒。</p>
+<p>添加超时可以作为一种机制来限制系统的最坏情况延迟，它允许 <code>getValue()</code> 的调用者具有更可预测的性能，并且不会占用等待 10 分钟长的调用返回的资源。其次，更重要的是，超时可以与重试和负载均衡相结合，以自动将请求重新发送到服务的不同实例。</p>
+<p>如果 <code>getValue()</code> 在实例 A 上很慢，在实例 B 或 C 上可能会很快，甚至多次重试也将远远少于等待 10 分钟。</p>
+<p>所以我们再来看看重试，重试是指 Linkerd 自动重试请求。这会在什么场景下有用呢？同样由于某些临时错误：<strong>如果特定实例上的特定路由返回错误，并且简单地重试该请求可能会导致响应成功，当然重要的是要意识到简单地重试请求并不能保证成功响应。如果底层错误不是暂时的，或者如果 Linkerd 无法重试，那么应用程序仍然需要处理这些错误。</strong></p>
+<p>在实践中，实现重试可能会很麻烦。如果想当然的做也是会有一定风险的，可能会给系统增加额外的负载，这个负载可能会让事情变得更糟糕。</p>
+<p>一种常见的故障场景就是<strong>重试风暴</strong>：</p>
+<ul>
+<li>服务 A 中的瞬时故障触发 B 对它请求的重试；</li>
+<li>这些重试导致 A 过载，这意味着 B 开始失败的请求；</li>
+<li>这会触发其调用者 C 对 B 的重试，然后导致 B 过载，依此类推。对于允许你配置每个请求的最大重试次数的系统尤其如此：</li>
+<li>每个请求最多重试 3 次听起来可能没什么问题，但在最坏的情况下会增加 300% 的负载。</li>
+</ul>
+<p>Linkerd 通过使用<strong>重试预算</strong>而不是每个请求的限制来设置重试的参数，将重试风暴的可能性降到最低。</p>
+<p>重试预算是可以重试的请求总数的百分比，Linkerd 的默认行为是允许对失败的请求进行 20% (200) 次重试，再加上每秒额外的 10 个请求。例如，如果原始请求负载是每秒 1000 个请求，那么 Linkerd 将允许每秒重试 210 个请求。当预算用尽时，Linkerd 不会重试请求，而是会向客户端返回 504 错误。</p>
+<p>综上所述：负载均衡、重试和超时都是为了在出现部分、暂时性故障的情况下保障应用程序的可靠性，并防止这些故障升级为全局中断。但它们并不是灵丹妙药，我们的应用程序中必须仍然能够处理错误。</p>
+<h3 id="per-route-metrics"><strong>使用 Per-Route Metrics 来确定何时重试和超时</strong></h3>
+<p>上面我们了解了在 Linkerd 中使用重试和超时的原因，接下来让我们在前面了解的可观测性功能的基础上，使用指标来做有关应用重试和超时的决策。</p>
+<p>首先，我们将查看 <strong>emojivoto</strong> 命名空间中所有 Deployments 的统计信息，然后我们再深入研究不健康的服务。</p>
+<p>直接使用 <code>linkerd viz stat</code> 命令即可，如下所示：</p>
+<pre><code>$ linkerd viz stat deploy -n emojivoto
+NAME       MESHED   SUCCESS      RPS   LATENCY_P50   LATENCY_P95   LATENCY_P99   TCP_CONN
+emoji         1/1   100.00%   2.3rps           1ms           1ms           4ms          3
+vote-bot      1/1   100.00%   0.3rps           1ms           2ms           2ms          1
+voting        1/1    87.01%   1.3rps           1ms           7ms           9ms          3
+web           1/1    91.91%   2.3rps           1ms          10ms          28ms          3
+</code></pre>
+<p><code>stat</code>命令向我们展示了黄金指标，包括成功率和延迟，我们可以注意到 voting 和 web 服务的成功率低于 100%，<strong>接下来我们可以通过 <code>linkerd viz edges</code> 命令来了解服务之间的关系</strong>。</p>
+<pre><code>$ linkerd viz edges deploy -n emojivoto
+SRC          DST        SRC_NS        DST_NS      SECURED
+vote-bot     web        emojivoto     emojivoto   √
+web          emoji      emojivoto     emojivoto   √
+web          voting     emojivoto     emojivoto   √
+prometheus   emoji      linkerd-viz   emojivoto   √
+prometheus   vote-bot   linkerd-viz   emojivoto   √
+prometheus   voting     linkerd-viz   emojivoto   √
+prometheus   web        linkerd-viz   emojivoto   √
+</code></pre>
+<p>当然也可以通过 <code>Linkerd Dashboard</code> 来查看章鱼图去了解服务之间的关系。</p>
+<p><img alt="Alt Image Text" src="../../images/chap11_3_3.png" title="body image" /></p>
+<p>从上面的结果可以看出 web 服务中的 Pods 对 voting 服务的 Pods 进行了调用，所以我们可以猜测是 voting 服务导致了 web 服务的错误，当然这还没结束，还记得前面我们介绍的 ServiceProfile 文件吗？</p>
+<p>我们有每条路由的指标，应该能够准确地看到哪些路由的成功率低于 100%，可以通过 <code>linkerd viz routes</code> 命令去了解 <code>voting</code> 服务的路由指标情况，如下命令所示：</p>
+<pre><code>$ linkerd viz routes deploy/voting -n emojivoto
+# ......
+VoteDog                        voting-svc         -        -             -             -             -
+VoteDoughnut                   voting-svc     0.00%   0.1rps           1ms           1ms           1ms
+VoteFax                        voting-svc         -        -             -             -             -
+VoteFire                       voting-svc   100.00%   0.0rps           1ms           1ms           1ms
+VoteFlightDeparture            voting-svc         -        -             -             -             -
+# ......
+</code></pre>
+<p><strong>同样我们也可以通过 <code>Linkerd Dashboard</code> 去查看 <code>voting</code> 服务的 <code>ROUTE METRICS</code> 信息</strong>，如下图所示：</p>
+<p><img alt="Alt Image Text" src="../../images/chap11_3_4.png" title="body image" /></p>
+<p>最终我们可以定位到是 VoteDoughnut 这条是请求失败的路由。</p>
+<p>现在我们不仅知道 web 服务和 voting 服务之间发生了错误，而且也知道了 VoteDoughnut 路由发生了错误。接下来我们可以使用重试来尝试解决错误，同时也可以要求开发人员进行代码调试。</p>
+<h3 id="_3"><strong>配置重试</strong></h3>
+<p>在我们开始为 <code>VotingDoughnut</code>路由配置重试之前，我们必须首先仔细查看 web 和 voting 服务的指标，因为这将帮助我们真正了解应用重试是否可以解决问题。</p>
+<p>这里我们将只使用 <code>Linkerd CLI</code>，因为它可以用通过使用 <code>-o wide</code> 标志向我们显示实际和有效的请求量和成功率，<strong>Linkerd 仪表盘会显示整体成功率和 RPS，但不显示实际和有效的指标</strong>。实际指标和有效指标之间的区别是：</p>
+<ul>
+<li>实际值来自接收请求的服务器的角度</li>
+<li>有效值是从发送请求的客户端的角度来看的</li>
+</ul>
+<p>在没有重试和超时的情况下，显然这两个数据是相同的。但是，一旦配置了重试或超时，它们就可能会不一样了。例如，重试会使实际的 RPS 高于有效的 RPS，因为从服务器的角度来看，重试是另一个请求，但从客户端的角度来看，它是同一个请求。重试可以使实际成功率低于有效成功率，因为失败的重试调用也发生在服务器上，但不会暴露给客户端。而超时可能会产生相反的效果：这取决于具体的返回时间，一个最终成功返回的超时请求可能会使实际成功率高于有效成功率，因为服务器将其视为成功，而客户端只看到失败。</p>
+<p>总的来说就是 Linkerd 的实际和有效指标在重试或超时的情况下可能会有所不同，但实际数字代表实际命中服务器的情况，而有效数字代表了在 Linkerd 的可靠性逻辑完成其职责后，客户端有效地得到了对其请求的响应。</p>
+<p>比如我们通过下面的命令来查看 vote-bot 服务的路由指标情况</p>
+<pre><code>$ linkerd viz routes deploy/vote-bot -n emojivoto --to deploy/web -owide
+ROUTE           SERVICE   EFFECTIVE_SUCCESS   EFFECTIVE_RPS   ACTUAL_SUCCESS   ACTUAL_RPS   LATENCY_P50   LATENCY_P95   LATENCY_P99
+GET /api/list   web-svc             100.00%          1.0rps          100.00%       1.0rps           1ms           2ms           2ms
+GET /api/vote   web-svc              86.21%          1.0rps           86.21%       1.0rps           2ms           7ms          10ms
+[DEFAULT]       web-svc                   -               -                -            -             -             -             -
+</code></pre>
+<p>上面的命令中我们添加了一个 <code>-o wide</code> 的标志，这样输出结果会包含实际和有效的成功和 RPS 指标。</p>
+<p>从 vote-bot 服务来看，web 服务的 <code>/api/vote</code> 路由的有效成功率和实际成功率都低于 100%，这是因为现在我们还没有配置重试。</p>
+<p>而且我们不能假设所有请求都是可重试的，重试请求对于 Linkerd 来说，是有非常具体的条件的：</p>
+<ul>
+<li>现在，使用 HTTP POST 方法的请求在 Linkerd 中不可重试。因为 POST 请求几乎总是在请求 body 中包含数据，重试请求意味着代理必须将该数据存储在内存中。因此，为了保持最小的内存使用，代理不存储 POST 请求 body，并且它们不能被重试。</li>
+<li>正如我们前面提到过的，Linkerd 仅将响应中的 5XX 状态码视为错误，而 2XX 和 4XX 都被识别为成功状态码。4XX 状态码表示服务器查看但找不到资源，这属于服务器的正确行为，而 5XX 状态码表示服务器在处理请求时遇到了错误，这是不正确的行为。</li>
+</ul>
+<p>现在我们通过在 web 服务的 <code>/api/vote</code> 路由中添加重试功能来验证下前面的知识。我们再次查看下 web 服务的 ServiceProfile 对象，内容如下所示：</p>
+<pre><code># web-sp.yaml
+apiVersion: linkerd.io/v1alpha2
+kind: ServiceProfile
+metadata:
+  name: web-svc.emojivoto.svc.cluster.local
+  namespace: emojivoto
+spec:
+  routes:
+    - condition:
+        method: GET
+        pathRegex: /api/list
+      name: GET /api/list
+    - condition:
+        method: GET
+        pathRegex: /api/vote
+      name: GET /api/vote
+</code></pre>
+<p>接着我们为路由 <code>/api/vote</code>增加一个 <code>isRetryable: true</code> 的属性，如下所示：</p>
+<pre><code> # web-sp-with-retry.yaml
+# ......
+- condition:
+    method: GET
+    pathRegex: /api/vote
+  name: GET /api/vote
+  isRetryable: true
+</code></pre>
+<p>更新后重新应用该 ServiceProfile 对象：</p>
+<pre><code>$ kubectl apply -f web-sp-with-retry.yaml
+</code></pre>
+<p>应用后我们可以观察 vote-bot 服务的路由指标变化情况：</p>
+<pre><code>$ watch linkerd viz routes deploy/vote-bot -n emojivoto --to deploy/web -o wide
+Every 2.0s: linkerd viz routes deploy/vote-bot -n emojivoto --to deploy/web -o wide                   MBP2022.local: Sun Aug 28 17:41:37 2022
+
+ROUTE           SERVICE   EFFECTIVE_SUCCESS   EFFECTIVE_RPS   ACTUAL_SUCCESS   ACTUAL_RPS   LATENCY_P50   LATENCY_P95   LATENCY_P99
+GET /api/list   web-svc             100.00%          1.0rps          100.00%       1.0rps           2ms           8ms          10ms
+GET /api/vote   web-svc              85.00%          1.0rps           16.50%       5.0rps           4ms         255ms         290ms
+[DEFAULT]       web-svc                   -               -                -            -             -             -             -
+</code></pre>
+<p>可以看到实际成功率变得非常底了，因为重试的结果可能还是错误。</p>
+<p>上面我们提到了 Linkerd 的重试行为是由重试预算配置的，当配置 isRetryable: true 的时候，会应用默认的重试预算规则，<strong>以下 ServiceProfile 资源的 YAML 片段，显示了具有默认值的 retryBudget 对象配置</strong>：</p>
+<pre><code>spec:
+  retryBudget:
+    retryRatio: 0.2
+    minRetriesPerSecond: 10
+    ttl: 10s
+</code></pre>
+<p>其中 retryBudget 参数是具有三个主要的字段：</p>
+<ul>
+<li>retryRatio：重试率，表示重试请求与原始请求的最大比率，retryRatio 为 0.2 表示重试最多会增加 20% 的请求负载。</li>
+<li>minRetriesPerSecond：这是在 retryRatio 允许的重试之外，每秒允许的重试次数（这允许在请求率很低时进行重试），默认为 10 RPS。</li>
+<li>ttl：表示在计算重试率时应考虑多长时间的请求，一个较大的值会考虑一个较大的窗口，因此允许更多的重试。默认为 10 秒。</li>
+</ul>
+<h3 id="_4"><strong>配置超时</strong></h3>
+<p>除了重试和重试预算外，Linkerd 还提供超时功能，允许你确保对指定路由的请求永远不会超过指定的时间。</p>
+<p>为了说明这一点，让我们重新来看一看 web 和 voting 服务的每个路由指标。</p>
+<pre><code>$ linkerd viz routes deploy/vote-bot -n emojivoto --to deploy/web -o wide
+
+$ linkerd viz routes deploy/web -n emojivoto --to deploy/voting -o wide
+</code></pre>
+<p>在前面我们已经了解到 web 和 voting 之间的延迟接近 1ms，为了演示超时，我们将 <code>/api/vote</code>路由超时时间设置为 0.5ms，这样基本上都无法满足要求就超时了，Linkerd 会将错误发送会客户端，成功率变为 0 了。</p>
+<p>修改 web 服务的 ServiceProfile 对象，添加 timeout 属性，如下所示：</p>
+<pre><code># web-sp-with-timeout.yaml
+apiVersion: linkerd.io/v1alpha2
+kind: ServiceProfile
+metadata:
+  name: web-svc.emojivoto.svc.cluster.local
+  namespace: emojivoto
+spec:
+  routes:
+    - condition:
+        method: GET
+        pathRegex: /api/list
+      name: GET /api/list
+    - condition:
+        method: GET
+        pathRegex: /api/vote
+      name: GET /api/vote
+      timeout: 0.5ms
+      isRetryable: true
+</code></pre>
+<p>应用上面的对象后，服务的有效和实际成功率就会都下降到 0，因为 /api/vote 在 0.5ms 内都会超时，所以成功率变为 0。</p>
+<pre><code>$ watch linkerd viz routes deploy/vote-bot -n emojivoto --to deploy/web -o wide
+Every 2.0s: linkerd viz routes deploy/vote-bot -n emojivoto --to deploy/web -o wide                   MBP2022.local: Sun Aug 28 19:12:15 2022
+
+ROUTE           SERVICE   EFFECTIVE_SUCCESS   EFFECTIVE_RPS   ACTUAL_SUCCESS   ACTUAL_RPS   LATENCY_P50   LATENCY_P95   LATENCY_P99
+GET /api/list   web-svc             100.00%          1.0rps          100.00%       1.0rps           2ms           2ms           2ms
+GET /api/vote   web-svc               0.00%          1.0rps            0.00%       0.0rps           0ms           0ms           0ms
+[DEFAULT]       web-svc   
+</code></pre>
+<p>到这里我们就了解了 Linkerd 中重试和超时使用，重试和超时是 Linkerd 整体策略的一部分，用于在出现瞬时故障时增加可靠性。</p>
+<p>我们通过使用服务配置文件中的每条路由指标来决定何时以及如何配置重试和超时。Linkerd 用重试预算为其重试提供参数，可以避免出现"重试风暴"的情况，当重试预算用完时，代理将停止向服务发送请求，以避免服务过载，并可能影响到应用程序的其他部分。</p>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+    <nav class="md-footer__inner md-grid" aria-label="页脚" >
+      
+        
+        <a href="../2linkered_index/" class="md-footer__link md-footer__link--prev" aria-label="上一页: 2 在 Linkerd 中获取应用的黄金指标" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                上一页
+              </span>
+              2 在 Linkerd 中获取应用的黄金指标
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../4linkered_mtls/" class="md-footer__link md-footer__link--next" aria-label="下一页: 4 在 Linkerd 中使用 mTLS 保护应用程序通信" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                下一页
+              </span>
+              4 在 Linkerd 中使用 mTLS 保护应用程序通信
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2021-9999 Jacob Xi
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.ecf98df9.min.js", "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.config.lang": "ja", "search.config.pipeline": "trimmer, stemmer", "search.config.separator": "[\\s\\-\uff0c\u3002]+", "search.placeholder": "\u641c\u7d22", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version.title": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.39f04ddb.min.js"></script>
+      
+    
+  </body>
+</html>
