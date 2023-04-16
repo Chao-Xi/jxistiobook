@@ -106,6 +106,15 @@ nav:
     - '6 在生产环境中使用 Linkerd': 'chap11/6linkered_prod.md'
     - '7 Linkerd 与 ingress-nginx 结合使用以及对服务的访问限制': 'chap11/7linkered_ingress.md'
     - '8 Linkerd 升级到全新的 2.12 版本': 'chap11/8linkerd_212.md'
+  - '第12章: APIGateway & APISIX':
+    - '0 微服务为什么要用到 API 网关？': 'chap12/0apigatway_intro.md'
+    - '1 API Gateway vs Load Balancer：选择适合你的网络流量管理组件': 'chap12/1api_vs_lb.md'
+    - '2 Service Mesh 和 API Gateway 关系深度': 'chap12/2apigatway_sm.md'
+    - '3 Apache APISIX 在金融云原生的生产实践': 'chap12/3apsix_fincloud.md'
+    - '4 Amazon Lambda 遇上 Apache APISIX': 'chap12/4lambda_apisix.md'
+    - '6 Gateway Services under Kubernetes - APISIX': 'chap12/6k8s_gateway.md'
+    - '7 云原生 API 网关 APISIX 入门教程': 'chap12/7gateway_apisix.md'
+    - '8 APISIX认证与自定义插件': 'chap12/8apixsix_plugin.md'
   - 'extra':
     - 'GitHub+Travis+Mkdocs自动化构建文档库(Istio)': 'extra/mk_book.md'
 
