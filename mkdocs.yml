@@ -97,7 +97,7 @@ nav:
   - '第10章: Istio架构及发展':
     - '1 Istiovs.Linkerdvs.Consul：服务网格该怎么选择？': 'chap10/1istio_linked_consul.md'
     - '2 Istio Ambient Mesh 介绍': 'chap10/2istio_ambient.md'
-    - '3 大规模场景下对Istio的性能优化': 'chap10/
+    - '3 大规模场景下对Istio的性能优化': 'chap10/3aeraki.md'
   - '第11章: Linkerd':
     - '1 Linkerd Service Mesh 快速上手': 'chap11/1linkered_sm.md'
     - '2 在 Linkerd 中获取应用的黄金指标': 'chap11/2linkered_index.md'
