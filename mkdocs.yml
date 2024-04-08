@@ -116,6 +116,7 @@ nav:
     - '6 Gateway Services under Kubernetes - APISIX': 'chap12/6k8s_gateway.md'
     - '7 云原生 API 网关 APISIX 入门教程': 'chap12/7gateway_apisix.md'
     - '8 APISIX认证与自定义插件': 'chap12/8apixsix_plugin.md'
+    - '9 API Gateway 技术漫谈 2024': 'chap12/9apigateway2024.md'
   - 'extra':
     - 'GitHub+Travis+Mkdocs自动化构建文档库(Istio)': 'extra/mk_book.md'
 
